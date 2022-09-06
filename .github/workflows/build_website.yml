@@ -31,6 +31,7 @@ jobs:
           git branch -f gh-pages HEAD
           git checkout gh-pages
       - run: |
+          cp CNAME build/CNAME
           git add -f build/
           git commit -m "Publish"
           git push -f origin `git subtree split -P build`:refs/heads/gh-pages
