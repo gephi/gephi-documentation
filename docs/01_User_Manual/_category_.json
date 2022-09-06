@@ -1,0 +1,8 @@
+{
+  "label": "User Manual",
+  "position": 1,
+  "link": {
+    "type": "doc",
+    "id": "index"
+  }
+}

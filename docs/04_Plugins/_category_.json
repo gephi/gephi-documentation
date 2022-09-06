@@ -1,7 +1,4 @@
 {
-  "label": "Plugin",
-  "position": 4,
-  "link": {
-    "type": "generated-index"
-  }
+  "label": "Plugin Development",
+  "position": 4
 }

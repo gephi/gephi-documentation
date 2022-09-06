@@ -44,7 +44,7 @@ Your panel is now created and automatically registered. Start Gephi with your pl
 @ServiceProvider(service=PerspectiveMember.class)
 public final class MyTopComponent extends TopComponent implements PerspectiveMember {
 ...
-```java
+```
 
 Implement `open()` and `close()` methods like below to attach the component to the `LaboratoryPerspective`, works also for `OverviewPerspective` and `PreviewPerspective`:
 

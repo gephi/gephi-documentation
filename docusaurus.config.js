@@ -6,9 +6,9 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Gephi Documentation Center',
-  tagline: 'Material for Gephi Developper',
-  url: 'https://documentation.gephi.org',
+  title: 'Gephi Documentation',
+  tagline: 'The Open Graph Viz Platform',
+  url: 'https://docs.gephi.org',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -29,9 +29,8 @@ const config = {
 
   presets: [
     [
-      'classic',
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
+      '@docusaurus/preset-classic',
+      {
         blog: false,
         docs: {
           routeBasePath: '/',
@@ -39,12 +38,12 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/gephi/gephi-documentation/docs',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
-      }),
+      },
     ],
   ],
 
@@ -59,12 +58,21 @@ const config = {
         },
         items: [
           {
-            type: 'doc',
-            docId: 'Intro',
+            to: '/',
+            activeBasePath: 'docs',
+            label: 'User Manual',
             position: 'left',
-            label: 'Developper Documentation',
           },
-          /*{to: '/blog', label: 'Blog', position: 'left'},*/
+          {
+            to: 'Developer_Documentation',
+            label: 'Developer Documentation',
+            position: 'left'
+          },
+          {
+            to: 'Plugins',
+            label: 'Plugin Development',
+            position: 'left'
+          },
           {
             href: 'https://github.com/gephi/gephi',
             label: 'GitHub',
@@ -75,15 +83,6 @@ const config = {
       footer: {
         style: 'dark',
         links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Tutorial',
-                to: '/Intro',
-              },
-            ],
-          },
           {
             title: 'Community',
             items: [
@@ -101,6 +100,10 @@ const config = {
             title: 'More',
             items: [
               {
+                label: 'Official Website',
+                to: 'https://gephi.org/',
+              },
+              {
                 label: 'Blog',
                 to: 'https://gephi.wordpress.com/',
               },
@@ -116,6 +119,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['java'],
       },
     }),
 };
