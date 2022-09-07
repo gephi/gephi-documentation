@@ -25,13 +25,13 @@ You can also run Gephi from the command-line using the `ant run` command.
 - In the next panel, enter a unique codebase name, for instance *org.myname.myfirstplugin* and click **Finish**.
 - In the Netbeans Project tree, you should see now your module *MyFirstPlugin*. Expand it to find its Source Package. Here you will place your code.
 
-![image](https://cloud.githubusercontent.com/assets/177962/5605694/d400f588-940a-11e4-83c8-ee7c9e847293.png)
+![image](/docs/04_Plugins/Plugin-Quick-Start/00_image.png)
 New module Step 1
 
-![image](https://cloud.githubusercontent.com/assets/177962/5605695/d78fb54a-940a-11e4-967e-00886daea18a.png)
+![image](/docs/04_Plugins/Plugin-Quick-Start/01_image.png)
 New module Step 2
 
-![image](https://cloud.githubusercontent.com/assets/177962/5605702/217797e0-940b-11e4-94e6-f867d9e05a78.png)
+![image](/docs/04_Plugins/Plugin-Quick-Start/02_image.png)
 New module in the Projects tree
 
 You created a plugin, which doesn't do anything for the moment. When you build Gephi, your plugin is now fully integrated. It appears in the Plugin Center (Tools > Plugin).
@@ -43,10 +43,10 @@ You created a plugin, which doesn't do anything for the moment. When you build G
 - Select **Packaging** on the left panel and fill **License**, **Homepage** (if exists) and **Author** information.
 - Click on OK to validate changes.
 
-![image](https://cloud.githubusercontent.com/assets/177962/5605707/4ab0abba-940b-11e4-9e6d-d0615db0044b.png)
+![image](/docs/04_Plugins/Plugin-Quick-Start/03_image.png)
 Branding Step 1
 
-![image](https://cloud.githubusercontent.com/assets/177962/5605708/4e773fd4-940b-11e4-8bb7-cb0924b3145f.png)
+![image](/docs/04_Plugins/Plugin-Quick-Start/04_image.png)
 Branding Step 2
 
 ## Distribute your plugin

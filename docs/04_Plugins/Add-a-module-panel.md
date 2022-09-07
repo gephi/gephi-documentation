@@ -5,7 +5,7 @@ title: Add a module panel
 
 How to create a panel for plugin features, similar to Ranking, Graph or Layout? It is easy and fully integrated in Netbeans. Create your panel class and use Netbeans IDE to design the user interface. This page also explains how to work with the **Perspective** system.
 
-![800px-add-module-panel](https://cloud.githubusercontent.com/assets/197285/5654096/550bf4b8-96c0-11e4-8d36-ad29c6502ce2.png)
+![800px-add-module-panel](/docs/04_Plugins/Add-a-module-panel/00_800px-add-module-panel.png)
 
 
 - **Step 1**: Right click on your module and select **New > Other...** and find **Window** like showed in the step 1 below. The window wizard asks where to put your panel. You can use already defined modes (i.e. positions):
@@ -16,19 +16,19 @@ How to create a panel for plugin features, similar to Ranking, Graph or Layout? 
   * filtersmode: Bottom Right
   * contextmode: Top Right
 
-![add-module-panel1](https://cloud.githubusercontent.com/assets/197285/5654098/5513e1fa-96c0-11e4-9a39-7184440b235d.png)
+![add-module-panel1](/docs/04_Plugins/Add-a-module-panel/01_add-module-panel1.png)
 
 - **Step 2**: Then check options about the panel policy showed in step2 and click on **Next**.
 
-![add-module-panel2](https://cloud.githubusercontent.com/assets/197285/5654094/55098340-96c0-11e4-9b1c-0847e2c2e1c0.png)
+![add-module-panel2](/docs/04_Plugins/Add-a-module-panel/02_add-module-panel2.png)
 
 - **Step 3**: Fill the **Class Name**, the system shows which files are created. Your panel is a **TopComponent** subclass.
 
-![add-module-panel3](https://cloud.githubusercontent.com/assets/197285/5654095/550bbc96-96c0-11e4-8ec7-8bff84992453.png)
+![add-module-panel3](/docs/04_Plugins/Add-a-module-panel/03_add-module-panel3.png)
 
 - **Step 4**: Click on **Finish**, files are created and you're invited to design your panel with Netbeans editor.
 
-![add-module-panel-design](https://cloud.githubusercontent.com/assets/197285/5654097/55119652-96c0-11e4-96b1-fbdedf704298.png)
+![add-module-panel-design](/docs/04_Plugins/Add-a-module-panel/04_add-module-panel-design.png)
 
 Your panel is now created and automatically registered. Start Gephi with your plugin and your panel is visible. 
 

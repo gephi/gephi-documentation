@@ -7,7 +7,7 @@ title: Spigot importer with Wizard
 
 This HowTo shows in about 20 minutes how to create a new spigot in Gephi. Spigots are like file importers, but with a different datasource. Spigots are the best way to import data from various data sources like Web Services, APIs, custom Databases or anything Java can read from. Like Importers, spigots push data to a `Container`, which hosts all data collected (i.e. nodes, edges and attributes). Moreover, spigots user interface supports **Wizards**, which makes it easy to have rich settings and a consistent flow.
 
-![spigot_menu](https://cloud.githubusercontent.com/assets/197285/5655355/6619c07a-96cd-11e4-9a36-f12aa7737433.png)
+![spigot_menu](/docs/04_Plugins/Spigot-importer-with-Wizard/00_spigot_menu.png)
 
 *Import Spigot Menu*
 
@@ -110,7 +110,7 @@ You will create a `ImporterWizardUI` class for your importer and learn how to cr
 
 A wizard is a set of panels, which follow each other with conditions. Consult the [Wizard API Javadoc](http://bits.netbeans.org/dev/javadoc/org-openide-dialogs/index.html?org/openide/WizardDescriptor.html). One can also find a more general tutorial on Netbeans Wizards [here](http://platform.netbeans.org/tutorials/nbm-wizard.html). The ImporterWizardUI class will provide the panels and the title of the spigot importer, as well as its description. But first, create a wizard panel.
 
-![spigot_howto1](https://cloud.githubusercontent.com/assets/197285/5655356/661d7828-96cd-11e4-9aba-f154068bf36c.png)
+![spigot_howto1](/docs/04_Plugins/Spigot-importer-with-Wizard/01_spigot_howto1.png)
 
 *My Spigot*
 
@@ -120,7 +120,7 @@ Create a new Java Panel class named `MySpigotWizardPanel1`. Go to File > New Fil
 
 Design your interface, by adding check boxes, text field etc. and go to the Source view.
 
-![spigot_howto_design](https://cloud.githubusercontent.com/assets/197285/5655357/661ea37e-96cd-11e4-8c48-0ed3f7ec9490.png)
+![spigot_howto_design](/docs/04_Plugins/Spigot-importer-with-Wizard/02_spigot_howto_design.png)
 
 Create an `unsetup()` method like below. This method will be called when the user leaves the wizard to actually configure your Spigot with the settings made in the UI.
 

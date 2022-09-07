@@ -194,4 +194,4 @@ Similar as classical logging framework, that is how to log a information message
 There are four levels: **INFO**, **WARNING**, **SEVERE**, **CRITICAL**. Note that the critical level will stop the import process and throw an exception, so it is reserved if the file cannot be read or the XML is not valid for instance.
 About exceptions, it is recommended that you throw `RuntimeException` from your execute method. They will be properly catched and displayed to users in a message box.
 
-![image](https://cloud.githubusercontent.com/assets/177962/5606728/a8cd1f40-943c-11e4-87cf-9dc27f21bce2.png)
+![image](/docs/04_Plugins/Import/00_image.png)
