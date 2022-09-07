@@ -19,8 +19,6 @@ Right click on your plugin and select `Properties`. On the "API Versionning" tab
 
 ## Step3: Upload on the Gephi Marketplace
 
-![gephi_marketplace](/docs/04_Plugins/Update-a-plugin/00_gephi_marketplace.png)
-
 ### Upload a new plugin
 
 1. Go to https://gephi.org/plugins/#/
