@@ -21,11 +21,11 @@ Next we'll learn how to use the import wizard to customize the data to our needs
 
 Start by clicking 'Import CSV' button in Data Laboratory as shown in the picture 
 
-![launch-import-csv-wizard](https://cloud.githubusercontent.com/assets/197285/5621089/42079e06-9532-11e4-8060-c8331475fad6.png)
+![launch-import-csv-wizard](/docs/01_User_Manual/Import-CSV-Data/00_launch-import-csv-wizard.png)
 
 Then the import wizard will open and you are presented with some generic, table independent options. 
 
-![import-csv-step1](https://cloud.githubusercontent.com/assets/197285/5621090/4c450e1c-9532-11e4-98f1-f14a5f17b55f.png)
+![import-csv-step1](/docs/01_User_Manual/Import-CSV-Data/01_import-csv-step1.png)
 
 In this step you will indicate the format of the CSV file and can preview the resulting table.
 
@@ -44,7 +44,7 @@ This final step offers some common options and behaviour descriptions for both n
 
 When importing to nodes table you can also indicate if you want to update a node's data instead of creating a new node when a node with that id already exists.
 
-![import-csv-step2-nodes](https://cloud.githubusercontent.com/assets/197285/5621094/520d375c-9532-11e4-9779-a77ee3474fa3.png)
+![import-csv-step2-nodes](/docs/01_User_Manual/Import-CSV-Data/02_import-csv-step2-nodes.png)
 
 ### Importing to edges table
 
@@ -53,4 +53,4 @@ In case of importing to edges table, the behaviour is a bit different:
 - 'Source' and 'Target' node Ids are mandatory for all rows
 - Edge type is optional and its default is 'Directed'
 
-![import-csv-step2-edges](https://cloud.githubusercontent.com/assets/197285/5621096/5661d20e-9532-11e4-8c8d-e3dcfb779c70.png)
+![import-csv-step2-edges](/docs/01_User_Manual/Import-CSV-Data/03_import-csv-step2-edges.png)

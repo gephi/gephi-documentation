@@ -190,4 +190,4 @@ How to remember last settings set to the exporter, as each time a new export is 
 
 It is the `ExporterUI`'s role to remember settings. The only thing to do is load settings at `setup()` and save settings at unsetup. Look at existing classes in the `ExporterPluginUI` module to have an example.
 
-![image](https://cloud.githubusercontent.com/assets/177962/5606752/2c16cdf0-943e-11e4-81d7-d6eee0930f29.png)
+![image](/docs/04_Plugins/Export/00_image.png)

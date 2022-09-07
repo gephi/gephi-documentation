@@ -15,9 +15,9 @@ Data Laboratory SPI may seem big, but all interfaces to implement are mostly the
 
 ### Where each type of manipulator appears in Gephi desktop application
 
-![800px-data-lab-overview](https://cloud.githubusercontent.com/assets/197285/5622447/0cc75486-9544-11e4-83c9-f2c25c9eaec3.png)
+![800px-data-lab-overview](/docs/04_Plugins/Extend-Data-Laboratory/00_800px-data-lab-overview.png)
 
-![merge-strategies](https://cloud.githubusercontent.com/assets/197285/5622445/0cc19c30-9544-11e4-95a1-6041c38c0878.png)
+![merge-strategies](/docs/04_Plugins/Extend-Data-Laboratory/01_merge-strategies.png)
 
 ### The Manipulator interface
 
@@ -177,7 +177,7 @@ public class Group extends BasicNodesManipulator {
 
 Both of these types of manipulators are shown as context menu actions in a popup menu, and benefit from some special settings defined in the `ContextMenuItemManipulator` interface. Their principal extra feature is the possibility to have subitems, as can be observed in the next image.
 
-![sub-items](https://cloud.githubusercontent.com/assets/197285/5622444/0c847346-9544-11e4-8687-0b02a461bab2.png)
+![sub-items](/docs/04_Plugins/Extend-Data-Laboratory/02_sub-items.png)
 
 It defines 3 methods:
 
@@ -371,4 +371,4 @@ public class MyManipulatorUI extends JPanel implements ManipulatorUI {
 
 ## Manipulators Summary
 
-![manipulators](https://cloud.githubusercontent.com/assets/197285/5622446/0cc4e6a6-9544-11e4-8678-662dea3eaec7.png)
+![manipulators](/docs/04_Plugins/Extend-Data-Laboratory/03_manipulators.png)

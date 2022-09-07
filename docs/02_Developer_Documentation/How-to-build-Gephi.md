@@ -20,7 +20,7 @@ Gephi software architecture is modular and therefore each feature is split into 
 
 * [Gephi APIs documentation](http://gephi.org/docs/api)
 
-![image](https://cloud.githubusercontent.com/assets/177962/5606309/e7360250-9429-11e4-9085-d948267a3f7d.png)
+![image](/docs/02_Developer_Documentation/How-to-build-Gephi/00_image.png)
 
 ## Build Gephi
 
@@ -70,19 +70,19 @@ Once built, Gephi can be run from the `modules/application` folder using a speci
 
 Open Netbeans and go to **File > Open Project** to look for the Gephi folder. Then, **Open Project**. Ensure the checkbox "Open Required Projects" is not selected.
 
-![Opening Gephi](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/open.png)
+![Opening Gephi](/docs/02_Developer_Documentation/How-to-build-Gephi/01_Opening Gephi.png)
 
 Right-click on the project and select **Clean and Build**. 
 
-![Build](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/clean_and_build.png)
+![Build](/docs/02_Developer_Documentation/How-to-build-Gephi/02_Build.png)
 
 Next, in the **Projects** tab of the file navigator, select **Gephi > Modules > gephi-app** and open the application module.
 
-![Open gephi-app](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/open_app.png)
+![Open gephi-app](/docs/02_Developer_Documentation/How-to-build-Gephi/03_Open gephi-app.png)
 
 Finally, select **Run** from this module.
 
-![Run](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/run.png)
+![Run](/docs/02_Developer_Documentation/How-to-build-Gephi/04_Run.png)
 
 ### Troubleshooting
 
@@ -96,37 +96,37 @@ As Gephi is a Maven project it is well supported by IntelliJ but requires some t
 
 Open IntelliJ and open the Gephi folder. You'll be asked whether you want to Trust this Maven repository. Select **Trust Project**.
 
-![Trust Maven](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-trust-maven.png)
+![Trust Maven](/docs/02_Developer_Documentation/How-to-build-Gephi/05_Trust Maven.png)
 
 IntelliJ then takes some time to scan the project and resolve dependencies. Once completed, you should see Gephi properly listed as a project in the Project pane.
 
-![Project loaded](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-project.png)
+![Project loaded](/docs/02_Developer_Documentation/How-to-build-Gephi/06_Project loaded.png)
 
 Then, navigate to IntelliJ's preferences panel **Build, Execution, Deployment > Build Tools > Maven > Runner** and select the option **Delegate IDE build/run actions to Maven**. This is a critical step.
 
-![Maven delegate config](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-maven-delegate.png)
+![Maven delegate config](/docs/02_Developer_Documentation/How-to-build-Gephi/07_Maven delegate config.png)
 
 Next in the top-level menu select **Build > Build Project**.
 
 If it fails with and error like `javac flag not found --release`, you would need to fo back to  **Build, Execution, Deployment > Build Tools > Maven > Runner** and add an **Environment Variables** with `JAVA_HOME=<path of the selected JDK>`
 
-![Build](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-build.png)
+![Build](/docs/02_Developer_Documentation/How-to-build-Gephi/08_Build.png)
 
 Once completed, create a run configuration by following **Run > Edit Configurations...** in the top-level menu.
 
-![Build](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-config.png)
+![Build](/docs/02_Developer_Documentation/How-to-build-Gephi/09_Build.png)
 
 Here, select **Add new configuration** and search for **Maven**.
 
-![Add Maven Config](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-config-add.png)
+![Add Maven Config](/docs/02_Developer_Documentation/How-to-build-Gephi/10_Add Maven Config.png)
 
 Next, we'll configure two things here. Enter `nbm:cluster-app nbm:run-platform` into the **Command line** field and select the `modules/application` sub-directory into the **Working directory** chooser. Give Gephi as name for the configuration.
 
-![Set Maven Config](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-set-config.png)
+![Set Maven Config](/docs/02_Developer_Documentation/How-to-build-Gephi/11_Set Maven Config.png)
 
 Finally, you can run Gephi by selecting **Run > Run 'Gephi'** from the top-level menu.
 
-![Run](https://github.com/gephi/gephi/raw/gh-pages/wiki/build/intellij-run.png)
+![Run](/docs/02_Developer_Documentation/How-to-build-Gephi/12_Run.png)
 
 ### Troubleshooting
 
