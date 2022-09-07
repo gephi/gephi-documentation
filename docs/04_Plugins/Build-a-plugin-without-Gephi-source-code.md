@@ -15,13 +15,13 @@ Open the "Tools|NetBeans Platforms" dialog, click on "Add Platform...", and choo
 
 By example, in the next picture, a Gephi installation was found in the `/opt/gephi-0.8-beta` directory.
 
-![addnetbeansplatform](https://cloud.githubusercontent.com/assets/197285/5655242/ff7f1a8c-96cb-11e4-9e83-6d2b110d31f9.png)
+![addnetbeansplatform](/docs/04_Plugins/Build-a-plugin-without-Gephi-source-code/00_addnetbeansplatform.png)
 
 Click on the `Next` button, and change the platform name if required. In that example, it was required to change the platform name to "Gephi 0.8 beta", since the Gephi 0.8 alpha and beta have the same identifier, namely "Gephi 0.8 alpha".
 
 As you can see, two Gephi platforms have been registered.
 
-![addnetbeansplatformdone](https://cloud.githubusercontent.com/assets/197285/5655241/ff7ec96a-96cb-11e4-9b15-113c6e7148d0.png)
+![addnetbeansplatformdone](/docs/04_Plugins/Build-a-plugin-without-Gephi-source-code/01_addnetbeansplatformdone.png)
 
 ## Build a Plugin
 
@@ -44,7 +44,7 @@ To build a plugin, it requires to:
     1. In Categories, choose "NetBeans Modules, and "Module" in projects, then click on the `Next` button;
     2. Configure the name, locations at your will. Add the new module to the module suite created in the previous step.
 
-![gephimoduleend](https://cloud.githubusercontent.com/assets/197285/5655243/ff849110-96cb-11e4-9311-323c9d31adbd.png)
+![gephimoduleend](/docs/04_Plugins/Build-a-plugin-without-Gephi-source-code/02_gephimoduleend.png)
 
 *Display after the creation of the module suite and the module*
 

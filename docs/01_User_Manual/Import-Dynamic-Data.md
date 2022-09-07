@@ -5,7 +5,7 @@ title: Import Dynamic Data
 
 Longitudinal (also called dynamic) networks are simply networks that evolve chronologically. If you imagine the network of your friends, the number of nodes, connections and attribute values grow and change as time passes. We call these dynamic attributes, because they have values associated with a particular moment.
 
-![intro-longitudinal](https://cloud.githubusercontent.com/assets/197285/5621316/9be7595a-9534-11e4-920e-a7326d588bcf.png)
+![intro-longitudinal](/docs/01_User_Manual/Import-Dynamic-Data/00_intro-longitudinal.png)
 
 *Longitudinal Networks*
 
@@ -15,7 +15,7 @@ There are two ways to model a longitudinal network, either a collection of netwo
 
 Imagine a network of three nodes for the years 2007, 2008 and 2009. The years these nodes are present can be represented either as distinct points in time or as time intervals (as pictured on the left and right sides of the arrow below, respectively). 
 
-![importdynamics-intervals](https://cloud.githubusercontent.com/assets/197285/5621313/9bd7b054-9534-11e4-96e5-709116563f63.png)
+![importdynamics-intervals](/docs/01_User_Manual/Import-Dynamic-Data/01_importdynamics-intervals.png)
 
 The second node, 'n2', is present during all three years and is represented by brackets enclosing the first and last years [2007, 2009]. Gephi automatically includes any dates, such as 2008, within this range. The first node, 'n1', however, is closed with a parenthesis rather than a bracket. This means the node was present in 2008 but **NOT** in 2009.
 
@@ -130,15 +130,15 @@ Imagine a social network where each node represents a friend of yours and one of
 
 - **Step 1:** Click on **Merge Columns** manipulator in the Data Laboratory.
 
-![transformlongitudinal-datalab1](https://cloud.githubusercontent.com/assets/197285/5621314/9be122d8-9534-11e4-9205-df450e73bc75.png)
+![transformlongitudinal-datalab1](/docs/01_User_Manual/Import-Dynamic-Data/02_transformlongitudinal-datalab1.png)
 
 - **Step 2:** From the available columns on the left, add the column or columns (if you have both a start and end period) you want to use to create the time interval. Then select **Create time interval** from the available merge strategies.
 
-![transformlongitudinal-datalab2](https://cloud.githubusercontent.com/assets/197285/5621317/9be849d2-9534-11e4-9b5d-e4988f3cf011.png)
+![transformlongitudinal-datalab2](/docs/01_User_Manual/Import-Dynamic-Data/03_transformlongitudinal-datalab2.png)
 
 - **Step 3:** Select which column is the start and which is the end (or leave this blank if no end exists). If the column is numerical (integer, float, double), select **Parse numbers**. If the data are date strings, they can also be parsed and transformed into a time interval. Our 'First Met' column is just the day in the year, just a number.
 
-![transformlongitudinal-datalab3](https://cloud.githubusercontent.com/assets/197285/5621319/9bf2350a-9534-11e4-9e2d-f970fb074cd9.png)
+![transformlongitudinal-datalab3](/docs/01_User_Manual/Import-Dynamic-Data/04_transformlongitudinal-datalab3.png)
 
 
 ## Use Time Frame Import with several static files
@@ -248,14 +248,14 @@ Do the following steps on a clear project to import your dataset:
 
 - **Step 1:** Import the first file and select **Time Frame** in the import report, click on OK. That will display a settings dialog.
 
-![importtimeframe1](https://cloud.githubusercontent.com/assets/197285/5621315/9be5649c-9534-11e4-86ab-88917b936b8a.png)
+![importtimeframe1](/docs/01_User_Manual/Import-Dynamic-Data/05_importtimeframe1.png)
 
 - **Step 2:** Select either a Date or a real number as a time format. Real numbers is the default choice, here we put the year 2007. Click on OK, the file is imported.
 
-![importtimeframe2](https://cloud.githubusercontent.com/assets/197285/5621318/9bea3134-9534-11e4-81cd-d96d9c6e92c3.png)
+![importtimeframe2](/docs/01_User_Manual/Import-Dynamic-Data/06_importtimeframe2.png)
 
 - **Step 3:** You can now do the same for all other files, in a chronological order. For the second file select 2008, then 2009 etc.
 
-![importtimeframe3](https://cloud.githubusercontent.com/assets/197285/5621320/9bfd40d0-9534-11e4-9502-1440679e4096.png)
+![importtimeframe3](/docs/01_User_Manual/Import-Dynamic-Data/07_importtimeframe3.png)
 
 The result is a longitudinal network in Gephi where nodes and edges have time intervals according how they were present in the different files. Similarly all attributes are dynamic attributes. The 'Price' attribute in the dataset in a **DYNAMIC_INTEGER** column and each value is associated with its interval. Moreover the edge's weight itself is dynamic. 

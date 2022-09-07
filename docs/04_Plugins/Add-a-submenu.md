@@ -9,20 +9,20 @@ From a plugin it is easy to add a menu in the menubar, for instance in **Plugins
 
 - **Step 1**: Right click on your module and select **New > Other...** and find **Action** like showed in the step 1 below. The action wizard will create everything necessary to register your action in the system and create the submenu.
 
-![addsubmenu-new-action](https://cloud.githubusercontent.com/assets/197285/5655118/77effff6-96ca-11e4-8a14-923e41cabee0.png)
+![addsubmenu-new-action](/docs/04_Plugins/Add-a-submenu/00_addsubmenu-new-action.png)
 
 - **Step 2**: Then click on **Next**, be sure **Always Enabled** is checked and **Next** again.
 - **Step 3**: In the **Menu** option, select where you want your submenu to be put. Select **Plugins** to be put in this menu.
 
-![addsubmenu-new-action-gui](https://cloud.githubusercontent.com/assets/197285/5655120/78224dbc-96ca-11e4-8deb-04f3f52d3de0.png)
+![addsubmenu-new-action-gui](/docs/04_Plugins/Add-a-submenu/01_addsubmenu-new-action-gui.png)
 
 - **Step 4**: Click on **Next** and fill the class name, as well as the display name.
 
-![addsubmenu-new-action-name](https://cloud.githubusercontent.com/assets/197285/5655121/7827d8c2-96ca-11e4-8d80-506e5ee48d4f.png)
+![addsubmenu-new-action-name](/docs/04_Plugins/Add-a-submenu/02_addsubmenu-new-action-name.png)
 
 - **Step 5**: Finally, click on **Next** to create the file.
 
-![addsubmenu-new-action-result](https://cloud.githubusercontent.com/assets/197285/5655119/781fd820-96ca-11e4-883c-4ea57cf1eaaf.png)
+![addsubmenu-new-action-result](/docs/04_Plugins/Add-a-submenu/03_addsubmenu-new-action-result.png)
 
 *Result*
 

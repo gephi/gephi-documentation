@@ -19,7 +19,7 @@ Right click on your plugin and select `Properties`. On the "API Versionning" tab
 
 ## Step3: Upload on the Gephi Marketplace
 
-![gephi_marketplace](https://marketplace.gephi.org/wp-content/uploads/2012/11/gmk2-300x82.png?71aaf5)
+![gephi_marketplace](/docs/04_Plugins/Update-a-plugin/00_gephi_marketplace.png)
 
 ### Upload a new plugin
 
