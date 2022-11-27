@@ -1,5 +1,5 @@
 ---
-id: démarrage-rapide-(fr)
+id: démarrage-rapide-fr
 title: Démarrage rapide (FR)
 sidebar_position: 2
 ---
