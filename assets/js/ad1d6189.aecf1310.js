@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgephi_documentation=self.webpackChunkgephi_documentation||[]).push([[1089],{2662:a=>{a.exports=JSON.parse('{"label":"GUI","permalink":"/tags/gui","allTagsPath":"/tags","count":1,"items":[{"id":"User_Manual/gui","title":"Graphical User Interface","description":"Global visual framework","permalink":"/User_Manual/gui"}]}')}}]);
