@@ -17,7 +17,7 @@ Ce tutoriel se base sur la version 0.7alpha2 de Gephi.
 
 ~~ Image : tutorial_quickstart1_FR ~~  
 
-<STRONG>Format des graphes</STRONG>  
+**Format des graphes**  
 - GEXF  
 - GraphML  
 - Pajek NET  
@@ -74,7 +74,7 @@ La fonction principale des algorithmes de spatialisation est de définir la form
 Vous pouvez voir les propriétés de la spatialisation sous son nom. Conservez les valeurs.  
 * Pour lancer l’algorithme, cliquez sur **Exécuter**.  
 
-<STRONG>Algorithmes de spatialisation</STRONG>  
+**Algorithmes de spatialisation**
 La spatialisation des graphes est généralement réalisée à partir d’algorithmes basés sur les forces. Ils suivent un principe simple : les noeuds reliés s’attirent et les noeuds non reliés se repoussent.  
 
 ## Contrôle de la spatialisation  
@@ -106,7 +106,7 @@ Le panneau de configuration suivant s’affiche :
 * Pour configurer la couleur, double-cliquez sur les triangles.  
 ~~ Image : ? ~~  
 
-<STRONG>Palette</STRONG>  
+**Palette**  
 Pour utiliser la palette, double-cliquez sur le volet.  
 ~~ Image : tutorial_quickstart17_FR + ? ~~  
 
@@ -125,7 +125,7 @@ Nous allons calculer la longueur de chemin moyenne pour le réseau. Cela permet 
 
 ~~ Image : tutorial_quickstart19_FR ~~
 
-<STRONG>Métriques disponibles</STRONG>  
+**Métriques disponibles**  
 - Diamètre  
 - Plus courts chemins  
 - Coefficient de Clustering  
@@ -213,7 +213,7 @@ Le module **Partition** peut utiliser ces nouvelles données pour colorer les co
 * Pour remplir la liste de partitions, cliquez sur le bouton **Rafraîchir**.  
 ~~ Image : tutorial_quickstart30_FR ~~  
 
-<STRONG>Comment visualiser les colonnes affichant les noeuds et les liens ?</STRONG>  
+**Comment visualiser les colonnes affichant les noeuds et les liens ?**
 Pour afficher les colonnes et les valeurs des noeuds et des liens, consultez le **Tableau de données**.  
 Pour actualiser le tableau, cliquez sur l’onglet **Laboratoire des données**, puis cliquez sur **Noeuds**.    
 
@@ -245,7 +245,7 @@ Ce volet comprend un curseur de réglage de la plage de degrés ainsi qu’un gr
 * Pour appliquer le filtre, cliquez sur le bouton **Filtrer**.  
 Les noeuds dont le degré est inférieur à 2 sont désormais masqués.  
 
-<STRONG>Astuce</STRONG>  
+**Astuce**
 Pour modifier les limites des degrés, double-cliquez sur les valeurs correspondantes.  
 ~~ Image : ? ~~  
 
@@ -267,7 +267,7 @@ La manipulation est terminée. Nous allons à présent prévisualiser la modéli
 * Pour afficher la prévisualisation, cliquez sur **Rafraîchir**.  
 ~~ Image : tutorial_quickstart_preview_FR ~~
 
-<STRONG>Astuce</STRONG>  
+**Astuce**
 Si le graphe est trop grand, vous pouvez afficher un graphe partiel en déplaçant le curseur du **Ratio** à 50 % ou à 25 %.  
 
 * Dans la catégorie **Labels de noeud**, activez la case à cocher **Afficher les labels**.  
@@ -288,7 +288,7 @@ Tout comme les PDF, les fichiers SVG sont des graphiques vectoriels. Les images 
 Les fichiers SVG peuvent être modifiés à l’aide du logiciel Inkscape ou Adobe Illustrator.  
 ~~ Image : ~~  
 
-<STRONG>Captures d’écran en haute résolution</STRONG>  
+**Captures d’écran en haute résolution **
 Si vous préférez uniquement les captures d’écran au format PNG en haute résolution, cliquez sur l’icône ~~ Image : ? ~~ située sous l’aperçu, dans la barre des paramètres d’aperçu.  
 
 # Enregistrement  
