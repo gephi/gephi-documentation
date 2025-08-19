@@ -12,7 +12,7 @@ const config: Config = {
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
-  favicon: "img/favicon.ico",
+  favicon: "img/logo.svg",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -26,55 +26,8 @@ const config: Config = {
     defaultLocale: "en",
     locales: ["en"],
   },
-  presets: [
-    [
-      "classic",
-      {
-        docs: {
-          routeBasePath: "/",
-          sidebarPath: require.resolve("./sidebars.ts"),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/gephi/gephi-documentation/docs",
-        },
-        theme: {
-          customCss: require.resolve("./src/css/custom.css"),
-        },
-      },
-    ],
-  ],
-
   themeConfig: {
-    navbar: {
-      title: "Gephi Documentation",
-      logo: {
-        alt: "Gephi logo",
-        src: "img/logo.svg",
-      },
-      items: [
-        {
-          to: "/",
-          activeBasePath: "docs",
-          label: "User Manual",
-          position: "left",
-        },
-        {
-          to: "Developer_Documentation",
-          label: "Developer Documentation",
-          position: "left",
-        },
-        {
-          to: "Plugins",
-          label: "Plugin Development",
-          position: "left",
-        },
-        {
-          href: "https://github.com/gephi/gephi",
-          label: "GitHub",
-          position: "right",
-        },
-      ],
-    },
+    navbar: {},
     footer: {
       style: "dark",
       links: [
@@ -119,4 +72,4 @@ const config: Config = {
   },
 };
 
-module.exports = config;
+export default config;

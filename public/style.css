@@ -36,3 +36,47 @@
 code {
   color: var(--ifm-code-color);
 }
+
+.navbar__logo img {
+  height: 32px;
+  width: 32px;
+}
+
+
+.projects {
+  display: flex;
+  gap: 5em;
+  margin-top: 5em;
+  justify-content: center;
+}
+
+.projects > .project {
+  position: relative;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  border: 1px solid var(--docusaurus-highlighted-code-line-bg);
+  border-radius: 0.25em;
+  box-shadow: 5px 5px 5px var(--docusaurus-highlighted-code-line-bg);
+}
+
+.projects > .project:hover {
+  border: 1px solid #000;
+  box-shadow: 5px 5px 10px #000;
+}
+
+.projects .project img.logo {
+  height: 300px;
+  width: 300px;
+}
+
+.projects .project .link:after {
+    position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  content: "";
+}
