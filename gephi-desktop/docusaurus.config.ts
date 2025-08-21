@@ -60,6 +60,11 @@ config.themeConfig.navbar = {
       position: "right",
     },
     {
+      href: "https://gephi.org",
+      label: "Gephi Website",
+      position: "right",
+    },
+    {
       href: "https://github.com/gephi/gephi",
       label: "GitHub",
       position: "right",

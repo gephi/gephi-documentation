@@ -30,7 +30,7 @@ config.presets = [
 ];
 
 config.themeConfig.navbar = {
-  title: "Gephi-Lite",
+  title: "Gephi Lite",
   logo: {
     alt: "Gephi Lite",
     src: "img/logo.svg",
@@ -39,6 +39,11 @@ config.themeConfig.navbar = {
     {
       href: "http://docs.gephi.org/",
       label: "Gephi Documentations",
+      position: "right",
+    },
+    {
+      href: "https://gephi.org",
+      label: "Gephi Website",
       position: "right",
     },
     {
