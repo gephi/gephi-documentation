@@ -32,32 +32,73 @@ const config: Config = {
       style: "dark",
       links: [
         {
-          title: "Community",
+          title: "Project",
           items: [
             {
-              label: "Facebook",
-              href: "https://www.facebook.com/groups/gephi",
+              label: "About",
+              href: "https://gephi.org/about",
             },
             {
-              label: "Twitter",
-              href: "https://twitter.com/gephi",
+              label: "Get some help",
+              href: "https://gephi.org/help",
+            },
+            {
+              label: "Contribute",
+              href: "https://gephi.org/contribute",
+            },
+            {
+              label: "Documentation",
+              href: "https://docs.gephi.org",
+            },
+            {
+              label: "Blog",
+              href: "https://gephi.wordpress.com/",
+            },
+            {
+              label: "Donate",
+              href: "https://opencollective.com/gephi/donate?interval=oneTime&amount=5&name=&legalName=&email=",
             },
           ],
         },
         {
-          title: "More",
+          title: "Applications",
           items: [
             {
-              label: "Official Website",
-              to: "https://gephi.org/",
+              label: "Gephi",
+              href: "https://gephi.org/desktop",
             },
             {
-              label: "Blog",
-              to: "https://gephi.wordpress.com/",
+              label: "Gephi Lite",
+              href: "https://gephi.org/lite",
+            },
+            {
+              label: "Gephi Toolkit",
+              href: "https://gephi.org/toolkit",
+            },
+            {
+              label: "Gephisto",
+              href: "https://gephi.org/gephisto",
+            },
+          ],
+        },
+        {
+          title: "Community",
+          items: [
+            {
+              label: "Open Collective",
+              to: "https://opencollective.com/gephi",
             },
             {
               label: "GitHub",
-              href: "https://github.com/gephi/gephi",
+              to: "https://github.com/gephi",
+            },
+            {
+              label: "Mastodon",
+              href: "https://vis.social/@Gephi",
+            },
+            {
+              label: "Reddit",
+              href: "https://reddit.com/r/gephi",
             },
           ],
         },

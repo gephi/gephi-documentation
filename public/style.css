@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Montserrat+Alternates:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
 /**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
@@ -6,14 +8,20 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: rgba(65,65,6,1);
-  --ifm-color-primary-dark: #646464;
-  --ifm-color-primary-darker: #555555;
-  --ifm-color-primary-darkest: #4e4e4e;
-  --ifm-color-primary-light: #949494;
-  --ifm-color-primary-lighter: #acacac;
-  --ifm-color-primary-lightest: #d3d3d3;
-  --ifm-link-color: rgba(112,136,65,1);
+  --ifm-font-weight-semibold: normal;
+  --ifm-heading-font-weight: normal;
+
+  --ifm-footer-link-hover-color: lightgray;
+
+  --ifm-color-primary: #555555;
+  --ifm-color-primary-dark: #4d4d4d;
+  --ifm-color-primary-darker: #484848;
+  --ifm-color-primary-darkest: #3b3b3b;
+  --ifm-color-primary-light: #5e5e5e;
+  --ifm-color-primary-lighter: #626262;
+  --ifm-color-primary-lightest: #6e6e6e;
+  --ifm-font-family-base: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ifm-link-color: var(--ifm-color-primary);
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-code-color: var(--ifm-color-primary-darkest);
@@ -21,14 +29,13 @@
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: rgba(210,278,72,1);
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --ifm-link-color: rgba(210,278,72,1);
+  --ifm-color-primary: #dddddd;
+  --ifm-color-primary-dark: #c7c7c7;
+  --ifm-color-primary-darker: #bcbcbc;
+  --ifm-color-primary-darkest: #9b9b9b;
+  --ifm-color-primary-light: #f3f3f3;
+  --ifm-color-primary-lighter: #fefefe;
+  --ifm-color-primary-lightest: #ffffff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --ifm-code-color: var(--ifm-color-primary-light);
 }
@@ -37,11 +44,14 @@ code {
   color: var(--ifm-code-color);
 }
 
+.navbar__title {
+  font-weight: normal;
+  font-family: "Montserrat Alternates", var(--ifm-font-family-base);
+}
 .navbar__logo img {
   height: 32px;
   width: 32px;
 }
-
 
 .projects {
   display: flex;
@@ -72,7 +82,7 @@ code {
 }
 
 .projects .project .link:after {
-    position: absolute;
+  position: absolute;
   top: 0;
   right: 0;
   bottom: 0;

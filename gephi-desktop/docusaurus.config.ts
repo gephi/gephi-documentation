@@ -20,7 +20,7 @@ config.presets = [
         sidebarPath: require.resolve("./sidebars.ts"),
         // Please change this to your repo.
         // Remove this to remove the "edit this page" links.
-        editUrl: "https://github.com/gephi/gephi-documentation/docs",
+        editUrl: "https://github.com/gephi/gephi-documentation/tree/master/gephi-desktop",
       },
       theme: {
         customCss: require.resolve("../public/style.css"),
