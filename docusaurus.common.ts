@@ -35,16 +35,16 @@ const config: Config = {
           title: "Project",
           items: [
             {
+              label: "Gephi.org",
+              href: "https://gephi.org",
+            },
+            {
               label: "About",
               href: "https://gephi.org/about",
             },
             {
-              label: "Get some help",
-              href: "https://gephi.org/help",
-            },
-            {
-              label: "Contribute",
-              href: "https://gephi.org/contribute",
+              label: "FAQ",
+              href: "https://gephi.org/faq",
             },
             {
               label: "Documentation",
@@ -68,16 +68,16 @@ const config: Config = {
               href: "https://gephi.org/desktop",
             },
             {
+              label: "Gephi plugins",
+              href: "https://gephi.org/desktop/plugins",
+            },
+            {
               label: "Gephi Lite",
               href: "https://gephi.org/lite",
             },
             {
-              label: "Gephi Toolkit",
-              href: "https://gephi.org/toolkit",
-            },
-            {
               label: "Gephisto",
-              href: "https://gephi.org/gephisto",
+              href: "https://jacomyma.github.io/gephisto",
             },
           ],
         },
