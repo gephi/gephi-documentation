@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "start": "concurrently \"vite --config vite.config.ts\" \"npm run start --workspace @gephi-documentation/desktop\" \"npm run start --workspace @gephi-documentation/lite\"",
-    "build": "npm run build --workspaces --if-present && copyfiles ./index.html build && copyfiles -u public/* build/",
+    "build": "npm run build --workspaces --if-present && copyfiles ./index.html build && copyfiles -u 1 public/* build/",
     "preview": "vite --config vite.preview.ts",
     "clean": "npm run clear && rimraf ./build",
     "clear": "npm run clear --workspaces --if-present"

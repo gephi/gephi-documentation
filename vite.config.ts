@@ -2,13 +2,10 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   server: {
+    hmr: false,
     proxy: {
-      "/desktop": {
-        target: "http://localhost:3001/",
-      },
-      "/lite": {
-        target: "http://localhost:3002/",
-      },
+      "/desktop": "http://localhost:3001/",
+      "/lite": "http://localhost:3002/",
     },
   },
 });

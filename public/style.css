@@ -44,6 +44,29 @@ code {
   color: var(--ifm-code-color);
 }
 
+.navbar--fixed-top {
+  position: sticky;
+  top: 0;
+  z-index: var(--ifm-z-index-fixed);
+}
+
+.navbar {
+  background-color: var(--ifm-navbar-background-color);
+  box-shadow: var(--ifm-navbar-shadow);
+  display: flex;
+  height: var(--ifm-navbar-height);
+  padding: var(--ifm-navbar-padding-vertical) var(--ifm-navbar-padding-horizontal);
+}
+
+.navbar__brand {
+  align-items: center;
+  color: var(--ifm-navbar-link-color);
+  display: flex;
+  margin-right: 1rem;
+  min-width: 0;
+  text-decoration: none;
+}
+
 .navbar__title {
   font-weight: normal;
   font-family: "Montserrat Alternates", var(--ifm-font-family-base);
