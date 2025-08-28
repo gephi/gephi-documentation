@@ -10,7 +10,7 @@ This guide explains several ways to do it.
 
 We provide an official Docker image of Gephi Lite: [Docker Hub - ouestware/gephi-lite](https://hub.docker.com/r/ouestware/gephi-lite)
 
-The image contains a built version of Gephi Lite, served by [Nginx](https://nginx.org/) on port `80`. 
+The image contains a built version of Gephi Lite, served by [Nginx](https://nginx.org/) on port `80`.
 
 To use it, open your terminal and run the following commands:
 
@@ -21,7 +21,6 @@ docker run --name gephi-lite -d -p 80:80 ouestware/gephi-lite:latest
 
 Then open [http://localhost](http://localhost) in your browser.
 
-
 ## Build from Source
 
 Gephi Lite is a [React](https://react.dev/) application. To build it, you need [npm](https://nodejs.org/en/download) and [Git](https://git-scm.com/downloads) installed on your computer.
@@ -29,7 +28,7 @@ Gephi Lite is a [React](https://react.dev/) application. To build it, you need [
 1. Clone the repository:
 
 ```sh
-git clone https://github.com/gephi/gephi-lite.git 
+git clone https://github.com/gephi/gephi-lite.git
 cd gephi-lite
 ```
 
@@ -46,7 +45,7 @@ export BASE_URL=/ && npm run build
 ```
 
 :::info
-By default, the build process creates a website that must be served under the `/gephi-lite` path (e.g. [http://localhost/gephi-lite/](http://localhost/gephi-lite/)).  
+By default, the build process creates a website that must be served under the `/gephi-lite` path (e.g. [http://localhost/gephi-lite/](http://localhost/gephi-lite/)).
 
 In the example above, we set the environment variable `BASE_URL` to `/` so the application can be served at the root of the domain.  
 You can adjust it to any path you prefer.
@@ -58,10 +57,26 @@ You can adjust it to any path you prefer.
 ./packages/gephi-lite/build/
 ```
 
-You can copy these files to any location, for example `/var/www/html/gephi-lite`.
+You can copy these files to any location, for example `/var/www/html/gephi-lite` or start a web server in this directory:
+
+With python
+
+```bash
+python -m http.server
+Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
+```
+
+With NPM
+
+```bash
+npx http-serve
+Starting up http-serve for ./
+Available on:
+  http://127.0.0.1:8081
+```
 
 5. Configure your web server (Apache, Nginx, etc.) to serve this folder.  
-Here’s an **Nginx example**:
+   Here’s an **Nginx example**:
 
 ```nginx
 server {
@@ -70,7 +85,7 @@ server {
   server_name _;
 
   # Replace this location with the one where you placed the Gephi Lite files
-  root /var/www/html/gephi-lite; 
+  root /var/www/html/gephi-lite;
 
   # Required for React applications
   location / {
