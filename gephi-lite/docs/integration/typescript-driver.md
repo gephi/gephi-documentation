@@ -102,7 +102,7 @@ The [`@gephi/gephi-lite-broadcast`](https://www.npmjs.com/package/@gephi/gephi-l
 So, when some method from the driver is called, for instance `const graph = await driver.getGraph();`, here is what happens:
 
 1. The driver calls [its internal method](https://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/driver.ts#L117): `this.callMethod<GetGraphMethod>("getGraph")` and returns a new result promise
-2. It creates a unique `messageID` and emits a [`MethodBroadcastMessage`](github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L74-L80), using `this.channel.postMessage({ ... })`
+2. It creates a unique `messageID` and emits a [`MethodBroadcastMessage`](https://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L74-L80), using `this.channel.postMessage({ ... })`
 3. It then waits for a [`MethodReplyMessage`](http://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L81-L83) message from the Gephi Lite instance
 4. If the reply comes, it resolves the result promise with the reply's payload
 5. If it doesn't (after some `timeout`), it rejects the result promise with a timeout error
@@ -111,8 +111,8 @@ So, when some method from the driver is called, for instance `const graph = awai
 
 There are still some missing methods from the Gephi Lite driver, unfortunately. Here is a quick guide (mostly for maintainers) on how to implement a new method:
 
-1. A new "Method type", extending [`BaseMethod`](github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L46-L50) must be added in [`broadcast/src/types.ts`](github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L125-L128), and added to the [`GephiLiteMethod`](github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L145) and [`GephiLiteMethodBroadcastMessage`](github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L159) union types. This will determine the arguments and response types of the new method.
+1. A new "Method type", extending [`BaseMethod`](https://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L46-L50) must be added in [`broadcast/src/types.ts`](https://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L125-L128), and added to the [`GephiLiteMethod`](https://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L145) and [`GephiLiteMethodBroadcastMessage`](https://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/types.ts#L159) union types. This will determine the arguments and response types of the new method.
 2. A new "shortcut method" must be added directly to the [`GephiLiteDriver` class](https://github.com/gephi/gephi-lite/blob/main/packages/broadcast/src/driver.ts#L103-L106). This will help TypeScript users discover this new method. It also can deal with serializing/deserializing inputs/outputs.
-3. Finally, the actual code that tells Gephi Lite how it should handle these events must be added in the [`BROADCAST_METHODS` collection](github.com/gephi/gephi-lite/blob/main/packages/gephi-lite/src/core/broadcast/client.ts#L32-L37), under the `BaseMethod`'s name. Hopefully, at this point, the typings will ensure the inputs and outputs are properly handled.
+3. Finally, the actual code that tells Gephi Lite how it should handle these events must be added in the [`BROADCAST_METHODS` collection](https://github.com/gephi/gephi-lite/blob/main/packages/gephi-lite/src/core/broadcast/client.ts#L32-L37), under the `BaseMethod`'s name. Hopefully, at this point, the typings will ensure the inputs and outputs are properly handled.
 
 Et voilà! That's all it takes to implement a new Gephi Lite driver method.
