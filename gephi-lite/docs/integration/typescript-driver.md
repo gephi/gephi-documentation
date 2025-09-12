@@ -28,30 +28,34 @@ So, let's see [how Gephi Lite uses the driver](https://github.com/gephi/gephi-li
 // This is the driver class, that allows all that:
 import { GephiLiteDriver } from "@gephi/gephi-lite-broadcast";
 // These are some internal Gephi Lite typings:
-import { AppearanceState, FiltersState, GraphDataset } from "@gephi/gephi-lite-sdk";
+import {
+  AppearanceState,
+  FiltersState,
+  GraphDataset,
+} from "@gephi/gephi-lite-sdk";
 
 export async function openInNewTab({
   dataset,
   appearance,
   filters,
-}: { dataset: GraphDataset; appearance: AppearanceState; filters: FiltersState } = {}) {
+}: {
+  dataset: GraphDataset;
+  appearance: AppearanceState;
+  filters: FiltersState;
+} = {}) {
   // 1. Instanciate GephiLiteDriver (no name is given, so a random UUID will be
   //    used instead):
   const driver = new GephiLiteDriver();
 
-  // 2. Open a new Gephi Lite in a new tab, and wait for it to emit a
-  //    "newInstance" on the proper channel:
-  await new Promise<void>((resolve) => {
-    driver.on("newInstance", () => {
-      resolve();
-    });
-    driver.openGephiLite({
-      baseUrl: location.pathname,
-    });
-  });
+  // 2. Open a new Gephi Lite in a new tab, and wait for it
+  await driver.openGephiLite({ baseUrl: location.pathname });
 
   // 3. Set graph data, appearance and filters in the new Gephi Lite instance:
-  await Promise.all([driver.setAppearance(appearance), driver.setFilters(filters), driver.setGraphDataset(dataset)]);
+  await Promise.all([
+    driver.setAppearance(appearance),
+    driver.setFilters(filters),
+    driver.setGraphDataset(dataset),
+  ]);
 
   // 4. Now that everything went fine, just destroy the driver (and close the
   //    Broacast Channel listener on this side):
