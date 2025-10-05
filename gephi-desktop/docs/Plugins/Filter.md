@@ -6,7 +6,7 @@ sidebar_position: 9
 
 Filters are pruning the graph by keeping only nodes and edges that satisfies filters conditions. They are either predicates or functions that reduce the graph, predicates are easy and return only true or false, whereas functions input a graph and output a graph.
 
-Please look at [[Plugin Quick Start]] to know how to create a new Netbeans Module. When you have your plugin module, that we will call *MyFilter*, you can start this tutorial.
+Create a new plugin module, that we will call *MyFilter*.
 
 One can find filters examples in the [FiltersPlugin module](https://github.com/gephi/gephi/tree/master/modules/FiltersPlugin/src/main).
 
@@ -28,12 +28,12 @@ When a property is changed in the user interface, for instance the weight thresh
 
 ### Set Dependencies
 
-Add `FiltersAPI`, `GraphAPI`, and `Lookup` modules as dependencies for your plugin module. See [[How To Set Module Dependencies]].
+Add `filters-api`, `graph-api`, and `org-openide-util-lookup` modules as dependencies for your plugin module.
 
 ### Create FilterBuilder
 
 * `FilterBuilder` is a factory class for building the Filters. The builder is registered in the `FilterLibrary`. The library is the upper panel where users choose the filters they want to use. Another type of builders, named `CategoryBuilder` can create several builders at once and will be detailed later.
-* Create a new builder *MyFilterBuilder* class, which implements [`FilterBuilder`](http://gephi.org/docs/api/org/gephi/filters/spi/FilterBuilder.html).
+* Create a new builder *MyFilterBuilder* class, which implements [`FilterBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/filters/spi/FilterBuilder.html).
 * Add `@ServiceProvider` annotation to your builder class, in order it is detected by the filter library.
 Here is how it should look like:
 
@@ -82,9 +82,9 @@ public Category getCategory() {
 
 Before creating the filter class, you should decide which filter interface to implement:
 
-* [`NodeFilter`](http://gephi.org/docs/api/org/gephi/filters/spi/NodeFilter.html): Basic filters for nodes, that works as predicates. For a given node the filter's role is to return true if the node is kept or false if it is removed.
-* [`EdgeFilter`](http://gephi.org/docs/api/org/gephi/filters/spi/EdgeFilter.html): Basic filters for edges, that works as predicates. For a given edge the filter's role is to return true if the edge is kept or false if it is removed.
-* [`ComplexFilter`](http://gephi.org/docs/api/org/gephi/filters/spi/ComplexFilter.html): Filter working with full graphs and returning a subgraph.
+* [`NodeFilter`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/filters/spi/NodeFilter.html): Basic filters for nodes, that works as predicates. For a given node the filter's role is to return true if the node is kept or false if it is removed.
+* [`EdgeFilter`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/filters/spi/EdgeFilter.html): Basic filters for edges, that works as predicates. For a given edge the filter's role is to return true if the edge is kept or false if it is removed.
+* [`ComplexFilter`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/filters/spi/ComplexFilter.html): Filter working with full graphs and returning a subgraph.
 
 The `ComplexFilter` interface is useful when both nodes and edges have to be filtered.
 For instance, in the case of an edge weight filter (a filter that keeps edges only in a particular weight threshold) we only need `EdgeFilter`. But if I want to design a filter that prunes the graph until it's average degree is 5.5 I need to have control on both nodes and edges. The complex filter is a black box, where nodes and edges can be filtered (e.g. removed) with tricky or complex processes.
@@ -118,11 +118,9 @@ public class MyFilter implements NodeFilter {
 }
 ```
 
-For specific directed or undirected graphs, just cast the `Graph` in `DirectedGraph` or `UndirectedGraph`.
-
 #### ComplexFilter
 
-The complex filter interface is very simple, the `filter()` method directly gives the [`Graph`](http://gephi.org/docs/api/org/gephi/graph/api/Graph.html).
+The complex filter interface is very simple, the `filter()` method directly gives the [`Graph`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/graph/api/Graph.html).
 
 ``public Graph filter(Graph graph);``
 
@@ -152,30 +150,20 @@ It uses the `removeEdge()` method from the `Graph` API and returns the graph it 
 
 **Can a filter also add elements?**
 Yes, as far as they are part of the main view as well.
-As as exemple, here is how the NOT operator works:
+As an example, here is how the NOT operator works:
 
 ```java
-GraphView graphView = graph.getView();
 Graph mainGraph = graph.getView().getGraphModel().getGraph();
 for (Node n : mainGraph.getNodes().toArray()) {
-   if (n.getNodeData().getNode(graphView.getViewId()) == null) {
-      //The node n is not in graph
-      graph.addNode(n);
-   } else {
-      //The node n is in graph
-      graph.removeNode(n);
-   }
+    if (!graph.contains(n)) {
+        //The node n is not in graph
+        graph.addNode(n);
+    } else {
+        //The node n is in graph
+        graph.removeNode(n);
+    }
 }
 ```
-
-It is possible to find the graph model from the view object. Then the `n.getNodeData().getNode(graphView.getViewId())` line gets the same node in another view. The `NodeData` is common at all views and maintains a list of views where the node is.
-
-**Can the complex filter returns a different graph view?**
-It's possible yes, but a use-case needing this is not obvious to find. The `GraphModel.newView()` is the method that duplicates the complete structure.
-
-**Can filters work with Hierarchical graph?**
-Yes, the view copy is copying the complete hierarchy tree.
-Just cast the received graph in [`HierarchicalGraph`](http://gephi.org/docs/api/org/gephi/graph/api/HierarchicalGraph.html).
 
 ### Finish the builder
 
@@ -254,7 +242,6 @@ It is important to set the value to the `FilterProperty`, not to *MyFilter* dire
 
 Category builders are typically designed to build a filter that work on Attributes. For example, the `AttributeRangeFilter` works with all attribute columns. That means a `FilterBuilder` has to be created for each column, under a category (e.g. a folder).
 The following example shows how several `AttributeRangeFilterBuilder` (which implements `FilterBuilder`) are created, one per attribute column.
-The `AttributeUtils` helps to know if a column is a numerical one.
 
 ```java
 @ServiceProvider(service = CategoryBuilder.class)
@@ -263,20 +250,19 @@ public class AttributeRangeBuilder implements CategoryBuilder {
     public Category getCategory() {
         return new Category("Range", null, FilterLibrary.ATTRIBUTES);    //The 'Range' folder will be in the 'Attributes' folder
     }
- 
-    public FilterBuilder[] getBuilders() {
-        List<FilterBuilder> builders = new ArrayList<FilterBuilder>();
-        AttributeModel am = Lookup.getDefault().lookup(AttributeController.class).getModel();
-        for (AttributeColumn c : am.getNodeTable().getColumns()) {
-            if (AttributeUtils.getDefault().isNumberColumn(c) || AttributeUtils.getDefault().isDynamicNumberColumn(c)) {
-                AttributeRangeFilterBuilder b = new AttributeRangeFilterBuilder(c);
-                builders.add(b);
-            }
-        }
-        for (AttributeColumn c : am.getEdgeTable().getColumns()) {
-            if (AttributeUtils.getDefault().isNumberColumn(c) || AttributeUtils.getDefault().isDynamicNumberColumn(c)) {
-                AttributeRangeFilterBuilder b = new AttributeRangeFilterBuilder(c);
-                builders.add(b);
+
+    public FilterBuilder[] getBuilders(Workspace workspace) {
+        List<FilterBuilder> builders = new ArrayList<>();
+        GraphModel am = Lookup.getDefault().lookup(GraphController.class).getGraphModel(workspace);
+        List<Column> columns = new ArrayList<>();
+        columns.addAll(am.getNodeTable().toList());
+        columns.addAll(am.getEdgeTable().toList());
+        for (Column c : columns) {
+            if (!c.isProperty() && !c.isArray()) {
+                if (AttributeUtils.isNumberType(c.getTypeClass())) {
+                    AttributeRangeFilterBuilder b = new AttributeRangeFilterBuilder(c);
+                    builders.add(b);
+                }
             }
         }
         return builders.toArray(new FilterBuilder[0]);
@@ -290,7 +276,7 @@ Simply return an icon in the `FilterBuilder` implementation.
 
 ### Custom Properties
 
-Properties natively supports all Java types, as well as Range and `AttributeColumn`. For other types you may have to register a property editor to guarantee serialization to work.
+Properties natively supports all Java types, as well as Range and `Column`. For other types you may have to register a property editor to guarantee serialization to work.
 Serialization is used to write and read properties values, when a Gephi project is saved.
 Implement a property editor class and register it:
 
