@@ -6,21 +6,22 @@ sidebar_position: 11
 
 ## Introduction
 
-Preview is a highly customizable module and plug-ins can implements new renderers to display additional elements on screen, for instance hulls for groups. It's also possible to overwrite existing renderers and replace node or edge aspect.
+Preview is a highly customizable module and plug-ins can implement new renderers to display additional elements on screen, for instance hulls for groups. It's also possible to overwrite existing renderers and replace node or edge aspect.
 
-Please look at [[Plugin Quick Start]] to know how to create a new Netbeans Module. When you have your plugin module, that we will call **MyRenderer**, you can start this tutorial.
+Create a new plugin module, that we will call **MyRenderer**, you can start this tutorial.
 
 **One can find renderers examples in the [PreviewPlugin](https://github.com/gephi/gephi/tree/master/modules/PreviewPlugin) module.**
 
 ### How renderers work
 
-Renderers describe how a particular item is rendered and has the code to dray on a rendering target (Processing, SVG or PDF). Items are for example the node or edges of the graph and are given to renderers to be drawn. Each item (e.g. node, edge) should have it's renderer.
+Renderers describe how a particular item is rendered and has the code to dray on a rendering target (Java2D, SVG or PDF). Items are for example the node or edges of the graph and are given to renderers to be drawn. Each item (e.g. node, edge) should have its renderer.
 
-Rendering is a three-steps process:
+Rendering is a four-steps process:
 
 1. First the `preProcess()` method is called on all renderers to let them initialize additional attributes for their items. The best example is the edge renderer which will initialize the source and target position in the `EdgeItem` object during this phase. In general the `preProcess()` method is the best for complex algorithms or gathering data from other items. Note that the `preProcess()` method is called only once per refresh, unlike `render()` which is called many times.
-2. The `isRendererForitem()` is then used to determine which renderer should be used to render an item. The method provides an access to the preview properties. For instance, if the properties says the edge display is disabled, the edge renderer should return false for every item. Note that nothing avoids several renderer to returns true for the same item.
+2. The `isRendererForitem()` is then used to determine which renderer should be used to render an item. The method provides access to the preview properties. For instance, if the properties says the edge display is disabled, the edge renderer should return false for every item. Note that nothing avoids several renderer to returns true for the same item.
 3. The `render()` method is finally called for every item which the renderer returned `true` at `isRendererForitem()`. It receives the properties and the render target. It uses the item attributes and properties to determine item aspects and the render target to obtain the canvas.
+4. Finally, the `postProcess()` method is called once for each renderer. It can be used to finalize the rendering, for instance to add legends or other global elements.
 
 If you want to create your own `Item` look at [[HowTo add a preview item]]
 
@@ -28,7 +29,7 @@ If you want to create your own `Item` look at [[HowTo add a preview item]]
 
 ### Set Dependencies
 
-Add Preview API, Processing Wrapper, iText Wrapper and Lookup modules as dependencies for your plugin module. See [[How To Set Module Dependencies]].
+Add `preview-api` and `org-openide-util-lookup` modules as dependencies for your plugin module. See [[How To Set Module Dependencies]].
 
 ### Create new Renderer
 
@@ -53,6 +54,10 @@ public class MyRenderer implements Renderer {
     public void render(Item item, RenderTarget target, PreviewProperties properties) {
         //TODO
     }
+    
+    public void postProcess(PreviewModel previewModel, RenderTarget target, PreviewProperties properties) {
+        //TODO
+    }
  
     public PreviewProperty[] getProperties() {
         //TODO
@@ -65,6 +70,11 @@ public class MyRenderer implements Renderer {
     public boolean needsItemBuilder(ItemBuilder itemBuilder, PreviewProperties properties) {
         //TODO
     }
+    
+    public CanvasSize getCanvasSize(Item item, PreviewProperties properties) {
+        //TODO
+    }
+    
 }
 ```
 
@@ -109,20 +119,20 @@ Properties should have a default value. It is set at the creation of the propert
 
 The render method receives an item and draw it to a render target. There is three possible render targets:
 
-- [Processing](http://gephi.org/docs/api/org/gephi/preview/api/ProcessingTarget.html)
-- [SVG](http://gephi.org/docs/api/org/gephi/preview/api/SVGTarget.html)
-- [PDF](http://gephi.org/docs/api/org/gephi/preview/api/PDFTarget.html)
+-- [Processing](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/preview/api/G2DTarget.html)
+-- [SVG](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/preview/api/SVGTarget.html)
+-- [PDF](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/preview/api/PDFTarget.html)
 
 Renderers should implement the drawing routines for the three targets. One might ask why the same code has to be duplicated in three different ways. Unfortunately there is no unified drawing toolkit flexible and efficient enough to support this task at this point. The good news is that renderers have total control on what is drawn. It's verbose but flexible.
 
-When the target is Processing, renderers obtain the [PGraphicsJava2D](http://processing.googlecode.com/svn/trunk/processing/build/javadoc/core/index.html?processing/core/PGraphicsJava2D.html) object. For the SVG target, renderers obtain Batik's [Document](http://xmlgraphics.apache.org/batik/using/dom-api.html) instance. As the PDF target rely on the iText library renderers obtain the [PdfContentByte](http://api.itextpdf.com/itext/index.html?com/itextpdf/text/pdf/PdfContentByte.html) object.
+When the target is Java2D, renderers obtain the `G2DTarget` object. For the SVG target, renderers obtain Batik's [Document](http://xmlgraphics.apache.org/batik/using/dom-api.html) instance. As the PDF target rely on the PDFBox library renderers obtain the [PDPageContentStream](https://pdfbox.apache.org/docs/2.0.8/javadocs/org/apache/pdfbox/pdmodel/PDPageContentStream.html) object.
 
 Example how to handle the three targets in render:
 
 ```java
 public void render(Item item, RenderTarget target, PreviewProperties properties) {
-    if (target instanceof ProcessingTarget) {
-        renderProcessing(item, (ProcessingTarget) target, properties);
+    if (target instanceof G2DTarget) {
+        renderG2D(item, (G2DTarget) target, properties);
     } else if (target instanceof SVGTarget) {
         renderSVG(item, (SVGTarget) target, properties);
     } else if (target instanceof PDFTarget) {
@@ -130,13 +140,13 @@ public void render(Item item, RenderTarget target, PreviewProperties properties)
     }
 }
  
-public void renderProcessing(Item item, ProcessingTarget target, PreviewProperties properties) {
-    PGraphics graphics = target.getGraphics();
+public void renderG2D(Item item, G2DTarget target, PreviewProperties properties) {
+    Graphics2D graphics = target.getGraphics();
     ...
 }
  
 public void renderPDF(Item item, PDFTarget target, PreviewProperties properties) {
-    PdfContentByte cb = target.getContentByte();
+    PDPageContentStream cb = target.getContentStream();
     ...
 }
  
@@ -154,7 +164,7 @@ Look at renderers examples in the [PreviewPlugin](https://github.com/gephi/gephi
 The default renderers can be overridden or extended.
 Extend or replace an existing renderer
 
-To extend or completely replace a default Renderer by your own implementation, create a new Renderer and set the annotation like below. In addition add [[Preview Plugin]] module as a dependency.
+To extend or completely replace a default Renderer by your own implementation, create a new Renderer and set the annotation like below. In addition, add `preview-plugin` module as a dependency.
 
 `@ServiceProvider(service=Renderer.class, position=XXX) public class MyRenderer extends NodeRenderer`
 
