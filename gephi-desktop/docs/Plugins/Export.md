@@ -4,26 +4,24 @@ title: Export
 sidebar_position: 7
 ---
 
-This HowTo shows, in about 15 minutes how to create a new exporter in Gephi. Exporters export data from Gephi to various targets, like files or streams.
+Exporters export data from Gephi to various targets, like files or streams.
 
-Please look at [[Plugin Quick Start]] to know how to create a new Netbeans Module. When you have your plugin module, that we will call *MyExporter*, you can start this tutorial.
-
-One can find file exporter examples in the `ExportPlugin` and `PreviewExport` modules.
+One can find file exporter examples in Gephi's `ExportPlugin` and `PreviewExport` [modules](https://github.com/gephi/gephi/tree/master/modules).
 
 ## Create a new Exporter
 
 ### Set Dependencies
 
-Add `ExportAPI`, `ProjectAPI`, and `Lookup` modules as dependencies for your plugin module *MyExport*. See [[How To Set Module Dependencies]].
+Add `export-api`, `project-api`, and `org-openide-util-lookup` modules as dependencies for your plugin module *MyExport*.
 
 ### Create Exporter Builder
 
 `ExporterBuilder` is a factory class for building the important instance, all Exporters should have their own builder.
 Create a new builder *MyExporterBuilder* class, which implements one of the following interface:
 
-* [`GraphFileExporterBuilder`](http://gephi.org/docs/api/org/gephi/io/exporter/spi/GraphFileExporterBuilder.html) - For graph export (like GEXF, GraphML, CSV...)
-* [`VectorFileExporterBuilder`](http://gephi.org/docs/api/org/gephi/io/exporter/spi/VectorFileExporterBuilder.html) - Vector graphics (like SVG, PDF, ...)
-* [`ExportBuilder`](http://gephi.org/docs/api/org/gephi/io/exporter/spi/ExporterBuilder.html) - Anything else
+* [`GraphFileExporterBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/GraphFileExporterBuilder.html) - For graph export (like GEXF, GraphML, CSV...)
+* [`VectorFileExporterBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/VectorFileExporterBuilder.html) - Vector graphics (like SVG, PDF, ...)
+* [`ExportBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/ExporterBuilder.html) - Anything else
 
 Let's say we create a exporter for a custom graph format with *.foo* extension, so we choose `GraphFileExporterBuilder`.
 
@@ -53,13 +51,14 @@ Put `GraphFileExporterBuilder.class` as the annotation service parameter for gra
 
 ### Create Exporter
 
-Create a new exporter class, which implements `GraphExporter`, `VectorExporter` or simply `Exporter`, depending what you set for the builder.
+Create a new exporter class, which implements `GraphExporter`, `VectorExporter` or simply `Exporter`, depending on what you set for the builder.
 
 The exporter is where the job is done, in its `execute()` method. The main input object the export needs is the Workspace. In Gephi, data are stored within workspaces. It is the place the exporter will find what to export. Before being executed by the export controller, the exporter will receive the workspace and other parameters through setters methods.
 
-Implement also [`ByteExporter`](http://gephi.org/docs/api/org/gephi/io/exporter/spi/ByteExporter.html) interface for byte streams or [`CharacterExporter`](http://gephi.org/docs/api/org/gephi/io/exporter/spi/CharacterExporter.html) for texts. These are the two ways you can output data in a exporter, either text (`java.io.Writer`) or byte (`java.io.OutputStream`). Note that XML is text-based. So exporters are not specifically exporting to a file or a stream, they export to a Writer or an `OutputStream`. The controller later decides what to do with it.
+Implement also [`ByteExporter`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/ByteExporter.html) interface for byte streams or [`CharacterExporter`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/CharacterExporter.html) for texts. These are the two ways you can output data in a exporter, either text (`java.io.Writer`) or byte (`java.io.OutputStream`). Note that XML is text-based. So exporters are not specifically exporting to a file or a stream, they export to a Writer or an `OutputStream`. The controller later decides what to do with it.
 
-Add also `LongTask` interface to your class, in order you will be able to use progress and cancel management. Add `LongTaskAPI` as a dependency to profit from LongTask.
+Add also `LongTask` interface to your class, in order you will be able to use progress and cancel management. Add `utils-longtask` as a dependency to profit from LongTask.
+
 Your exporter should now look like below:
 
 ```java
@@ -135,7 +134,7 @@ You can create an `ExporterUI` class for your exporter. It is not mandatory and 
 
 Create a new exporter UI class, for instance *MyExporterUI* that implements `ExporterUI`.
 
-Your UI class is responsible of providing the JPanel associated to your exporter and set settings value to your *MyExporter* instance. The system will ask for a JPanel, show a setting dialog and then call `unsetup()`. If users validate the settings panel by hitting OK, the `unsetup()` method is called with update set as true and ask the UI to write the setting values.
+Your UI class is responsible for providing the JPanel associated to your exporter and set settings value to your *MyExporter* instance. The system will ask for a JPanel, show a setting dialog and then call `unsetup()`. If users validate the settings panel by hitting OK, the `unsetup()` method is called with update set as true and ask the UI to write the setting values.
 The sample below will help you:
 
 ```java
