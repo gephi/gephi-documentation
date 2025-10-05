@@ -1,17 +1,17 @@
 ---
-id: vocabulary
-title: Vocabulary
+id: glossary
+title: Glossary
 sidebar_position: 2
 ---
+
+**Appearance**
+The way to change the visual aspect of nodes and edges.
 
 **AutoUpdate**
 The application can update itself.
 
 **Attribute**
 Data associated to a node or an edge. Could be text, numbers, booleans and more.
-
-**Clustering**
-Algorithm that group nodes in clusters or communities.
 
 **Exporter**
 Module that exports in a particular file format.
@@ -39,9 +39,6 @@ A Gephi session, which contains all workspaces and data.
 
 **Tool**
 Way to interact with the displayed graph.
-
-**Vectorial file**
-Graphical file format that descibes shapes.
 
 **Workspace**
 A whole environment for exploring one graph.
