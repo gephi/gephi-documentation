@@ -4,19 +4,17 @@ title: Generator
 sidebar_position: 8
 ---
 
-This HowTo shows how to create a new graph generator in Gephi.
-
-Please look at [[Plugin Quick Start]] to know how to create a new Netbeans Module. When you have your plugin module, that we will call *MyGenerator*, you can start this tutorial.
+Create a new plugin module, that we will call *MyGenerator*.
 
 ## Create a new Generator
 
 ### Set Dependencies
 
-Add `Lookup`, `GraphAPI` and `LongTaskAPI` modules as dependencies for your plugin module *MyGenerator*. See [[How To Set Module Dependencies]].
+Add `org-openide-util-lookup`, `graph-api` and `utils-longtask` modules as dependencies for your plugin module *MyGenerator*.
 
 ### Create Generator
 
-* Create a new class that implements [Generator](https://gephi.org/docs/api/org/gephi/io/generator/spi/Generator.html). This is the place the code belongs.
+* Create a new class that implements [Generator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/generator/spi/Generator.html). This is the place the code belongs.
 * Fill getName() method by returning a display name like "My Generator". Fill `getUI()` method by returning `null`. Leaves other methods untouched for the moment.
 * Add `@ServiceProvider` annotation to your builder class. Add the following line before *MyGenerator* class definition, as shown below:
 
@@ -35,8 +33,10 @@ Fill `generate()` method by creating `NodeDraft` and `EdgeDraft` elements to add
 To let your graph creation task be canceled and its progress watched, implement `LongTask` interface on *MyGenerator*.
 Add two fields:
 
+```java
 private boolean cancel = false;
 private ProgressTicket progressTicket;
+```
 
 and implement new methods:
 
