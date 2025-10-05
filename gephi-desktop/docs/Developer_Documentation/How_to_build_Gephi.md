@@ -10,16 +10,18 @@ Follow this guide to start developing the Gephi source code and test your change
 
 ### Netbeans Platform
 
-The NetBeans Platform is a generic framework for Swing applications. It provides the "plumbing" that, before, every developer had to write themselves—saving state, connecting actions to menu items, toolbar items and keyboard shortcuts; window management, and so on.
+The NetBeans Platform is a generic framework for Swing applications. It provides the "plumbing" and "windowing system" for large, modular Java Swing applications. The project is still maintained by the Apache Software Foundation.
 * [Description](https://netbeans.apache.org/kb/docs/platform/)
 * [Netbeans API Index](https://bits.netbeans.org/dev/javadoc/)
-* [FAQ](https://netbeans.apache.org/wiki/DevFaqIndex.asciidoc)
+* [FAQ](https://netbeans.apache.org/wiki/main/netbeansdevelopperfaq/DevFaqIndex/)
+
+Netbeans Platform dependencies are all available on Maven Central. It also depends on [FlatLaf](https://www.formdev.com/flatlaf/) for the look and feel.
 
 ### Gephi Architecture
 
 Gephi software architecture is modular and therefore each feature is split into modules. Modules depend on each other, and Gephi modules can either depend on other Gephi modules or Netbeans Platform modules. Plugins developers simply create new modules that contains their code, add dependencies to Gephi modules, and distribute their plugins by creating an NBM package. See Gephi APIs documentation to learn more about the API plugins that can be used by modules.
 
-* [Gephi APIs documentation](http://gephi.org/docs/api)
+* [Gephi APIs documentation](https://javadoc.io/doc/org.gephi/gephi/latest/index.html)
 
 ![image](/docs/Developer_Documentation/How-to-build-Gephi/00_image.png)
 
@@ -27,8 +29,8 @@ Gephi software architecture is modular and therefore each feature is split into 
 
 ### Requirements
 
-* Java JDK 11 or later
-* Apache Maven version 3.2.2 or later
+* Java JDK 17 or later
+* Apache Maven version 3.6.3 or later
 
 ### Checkout and Build the sources
 
@@ -39,12 +41,18 @@ git clone https://github.com/gephi/gephi
 cd gephi 
 ```
 
-Gephi uses Maven for building. Each module has its `POM.xml` file and there is a `gephi-parent` POM file that lists all the modules required to build. 
+Gephi uses Maven for building. Each module has its `pom.xml` file and there is a `gephi-parent` POM file that lists all the modules required to build. 
 
-Run this command to build all modules. Note that this process could take some time.
+Run this command to build all modules.
 
 ```
-mvn clean install
+mvn -T 4 clean install
+```
+
+By default, unit tests are turned off to speed up the build. To enable them, use:
+
+```
+mvn -T 4 package -P enableTests
 ```
 
 ### Run it
@@ -67,11 +75,11 @@ Once built, Gephi can be run from the `modules/application` folder using a speci
 
 ## Building Gephi in NetBeans
 
-[Apache Netbeans](https://netbeans.apache.org/) is the default IDE to develop Gephi as it natively integrates with the Netbeans Platform. Loading the project is straightforward.
+[Apache Netbeans](https://netbeans.apache.org/) is a great choice to develop Gephi as it natively integrates with the Netbeans Platform. Loading the project is straightforward.
 
 Open Netbeans and go to **File > Open Project** to look for the Gephi folder. Then, **Open Project**. Ensure the checkbox "Open Required Projects" is not selected.
 
-![Opening Gephi](/docs/Developer_Documentation/How-to-build-Gephi/01_Opening Gephi.png)
+![Opening Gephi](/docs/Developer_Documentation/How-to-build-Gephi/01_Opening_Gephi.png)
 
 Right-click on the project and select **Clean and Build**. 
 
@@ -93,19 +101,17 @@ When you make code changes in a module, make sure to **Clean and Build** this mo
 
 ## Building Gephi in IntelliJ IDEA
 
-As Gephi is a Maven project it is well supported by IntelliJ but requires some tweaks to work properly.
+As Gephi is a Maven project it is supported by IntelliJ but requires some tweaks to work properly.
 
 Open IntelliJ and open the Gephi folder. You'll be asked whether you want to Trust this Maven repository. Select **Trust Project**.
 
-![Trust Maven](/docs/Developer_Documentation/How-to-build-Gephi/05_Trust Maven.png)
-
 IntelliJ then takes some time to scan the project and resolve dependencies. Once completed, you should see Gephi properly listed as a project in the Project pane.
 
-![Project loaded](/docs/Developer_Documentation/How-to-build-Gephi/06_Project loaded.png)
+![Project loaded](/docs/Developer_Documentation/How-to-build-Gephi/06_Project_loaded.png)
 
 Then, navigate to IntelliJ's preferences panel **Build, Execution, Deployment > Build Tools > Maven > Runner** and select the option **Delegate IDE build/run actions to Maven**. This is a critical step.
 
-![Maven delegate config](/docs/Developer_Documentation/How-to-build-Gephi/07_Maven delegate config.png)
+![Maven delegate config](/docs/Developer_Documentation/How-to-build-Gephi/07_Maven_delegate_config.png)
 
 Next in the top-level menu select **Build > Build Project**.
 
@@ -119,11 +125,11 @@ Once completed, create a run configuration by following **Run > Edit Configurati
 
 Here, select **Add new configuration** and search for **Maven**.
 
-![Add Maven Config](/docs/Developer_Documentation/How-to-build-Gephi/10_Add Maven Config.png)
+![Add Maven Config](/docs/Developer_Documentation/How-to-build-Gephi/10_Add_Maven_Config.png)
 
 Next, we'll configure two things here. Enter `nbm:cluster-app nbm:run-platform` into the **Command line** field and select the `modules/application` sub-directory into the **Working directory** chooser. Give Gephi as name for the configuration.
 
-![Set Maven Config](/docs/Developer_Documentation/How-to-build-Gephi/11_Set Maven Config.png)
+![Set Maven Config](/docs/Developer_Documentation/How-to-build-Gephi/11_Set_Maven_Config.png)
 
 Finally, you can run Gephi by selecting **Run > Run 'Gephi'** from the top-level menu.
 
