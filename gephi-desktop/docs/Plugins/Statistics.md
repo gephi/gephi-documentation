@@ -4,36 +4,20 @@ title: Statistics
 sidebar_position: 4
 ---
 
-## Available statistics
-
-- [[Average Clustering Coefficient]]
-- [[Average Path Length]]
-- [[Betweenness Centrality]]
-- [[Closeness Centrality]]
-- [[Connected Components]]
-- [[Degree]]
-- [[Degree Power Law]]
-- [[Diameter]]
-- [[Eigenvector Centrality]]
-- [[Graph Density]]
-- [[HITS]]
-- [[Modularity]]
-- [[PageRank]]
-
 ## Create a new Metric
 
 This HowTo shows how to create a new statistic/metric algorithm in Gephi.
 
-Please look at [[Plugin Quick Start]] to know how to create a new Netbeans Module. When you have your plugin module, that we will call *MyMetric*, you can start this tutorial.
+Create a new plugin module, that we will call *MyMetric*.
 
 ### Set Dependencies
 
-Add `StatisticsAPI`, `GraphAPI` and `AttributesAPI` modules as dependencies for your plugin module *MyMetric*. See [[How To Set Module Dependencies]]. Also add `LongTaskAPI` and `Lookup`, which will be used.
+Add `statistics-api`, `graph-api` modules as dependencies for your plugin module *MyMetric*. See [[How To Set Module Dependencies]]. Also add `utils-longtask` and `org-openide-util-lookup`, which will be used.
 
 ### Create StatisticsBuilder
 
 * Statistics Builder provides information about the metric algorithm and is responsible for creating your Statistics algorithm instances. All metric algorithms should have their own builder.
-* Create a new builder class, for instance `MyMetricBuilder` that implements [`StatisticsBuilder`](http://gephi.org/docs/api/org/gephi/statistics/spi/StatisticsBuilder.html).
+* Create a new builder class, for instance `MyMetricBuilder` that implements [`StatisticsBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/statistics/spi/StatisticsBuilder.html).
 * Fill `getName()` method by returning a display name like *My Metric*. Leaves other methods untouched for the moment.
 * Add `@ServiceProvider` annotation to your builder class. Add the following line before *MyMetricBuilder* class definition, as shown below:
 
@@ -45,7 +29,7 @@ public class MyMetricBuilder implements StatisticsBuilder {
 
 ### Create Statistics
 
-Create a new class that implements [`Statistics`](http://gephi.org/docs/api/org/gephi/statistics/spi/Statistics.html) and name it *MyMetric*. This is the place the algorithm belongs.
+Create a new class that implements [`Statistics`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/statistics/spi/Statistics.html) and name it *MyMetric*. This is the place the algorithm belongs.
 Locate the `execute()` method, you will add your code here. The `getReport()` method should return plain text or HTML text that describe the algorithm execution. Create a new field
 
 `` private String report = "";``
@@ -62,7 +46,7 @@ public Class<? extends Statistics> getStatisticsClass() {
 }
 ```
 
-Details about how to use `GraphModel` and `AttributeModel` are said in the next section.
+Details about how to use `GraphModel` in the next section.
 
 ### Set LongTask
 
@@ -88,8 +72,6 @@ public void setProgressTicket(ProgressTicket progressTicket) {
 ```
 
 Use the cancel field to terminate your algorithm execution properly and return from `execute()`.
-See [[HowTo use Progress]] for more details.
-
 ### Create StatisticsUI
 
 Create a new class that implements `StatisticsUI` and name it *MyMetricUI*. The user interfaces is defined here and allows to be automatically added to the `Statistics` module in Gephi.
@@ -173,12 +155,16 @@ and `Progress.progress(progressTicket)` within the loop.
 
 ### Lock your algorithm
 
-It's preferable to execute your algorithm in a read lock, in order no other thread can modify the graph while execution. Never return `execute()` with a lock open, see [Graph Locking](http://gephi.org/docs/api/org/gephi/graph/api/Graph.html)
+It's preferable to execute your algorithm in a read lock, in order no other thread can modify the graph while execution. Never return `execute()` with a lock open.
 
 ```java
 graph.readLock();
-//Your algorithm
-graph.readUnlockAll();
+try{
+    //Your algorithm
+    graph.readUnlock();
+} finally {
+    graph.readUnlock();
+}
 ```
 
 ### Write results for each node/edge
@@ -186,16 +172,11 @@ graph.readUnlockAll();
 It's easy, you create a new column and set row's value for each node. If you want to write an in-degree column, in `execute()`:
 
 ```java
-AttributeTable nodeTable = attributeModel.getNodeTable();
-AttributeColumn inCol = nodeTable.getColumn("indegree");
- 
-if (inCol == null) {
-    inCol = nodeTable.addColumn("indegree", "In Degree", AttributeType.INT, AttributeOrigin.COMPUTED, 0);
-}
+Table nodeTable = graphModel.getNodeTable();
+Column col = nodeTable.addColumn("my_column", "My Column", Integer.class);
  
 for (Node n : graph.getNodes()) {
-    AttributeRow row = (AttributeRow) n.getNodeData().getAttributes();
-    row.setValue(inCol, graph.getInDegree(n));
+    n.setAttribute(col, ...); //Your value here
 }
 ```
 
@@ -213,15 +194,11 @@ public void execute(GraphModel graphModel, AttributeModel attributeModel) {
         for (Node n : graph.getNodes()) {
             //do something
             Progress.progress(progressTicket);
-            if (cancel) {
-                break;
-            }
         }
-        graph.readUnlockAll();
     } catch (Exception e) {
         e.printStackTrace();
-        //Unlock graph
-        graph.readUnlockAll();
-   }
+   } finally {
+        graph.readUnlock();
+    }
 }
 ```
