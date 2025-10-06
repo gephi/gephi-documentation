@@ -4,9 +4,9 @@ title: Import
 sidebar_position: 5
 ---
 
-This HowTo shows, in about 15 minutes how to create a new importer in Gephi. Importers push data from files, databases or external datasources to a `Container`. The role of the container is to host all data collected by importers (i.e. nodes, edges and attributes). This HowTo is focused on file importers, but the procedure is slightly similar for databases or spigots.
+Importers push data from files, databases or external datasources to a `Container`. The role of the container is to host all data collected by importers (i.e. nodes, edges and attributes). This documentation is focused on file importers, but the procedure is similar for databases.
 
-Please look at [[Plugin Quick Start]] to know how to create a new Netbeans Module. When you have your plugin module, that we will call *MyImporter*, you can start this tutorial.
+Create a new plugin module, that we will call *MyImporter*.
 
 One can find file importer examples in the Gephi [source code](https://github.com/gephi/gephi/tree/master/modules/ImportPlugin/src/main).
 
@@ -14,7 +14,7 @@ One can find file importer examples in the Gephi [source code](https://github.co
 
 ### Set Dependencies
 
-Add `ImportAPI`, `LongTaskAPI`, `FileSystemAPI`, `UtilitiesAPI` and Lookup modules as dependencies for your plugin module *MyImport*. See [[How To Set Module Dependencies]].
+Add `io-importer-api`, `utils-longtask`, `org-openide-filesystems` and `org-openide-util-lookup` modules as dependencies for your plugin module *MyImport*.
 
 ### Create FileImporterBuilder
 
@@ -44,7 +44,7 @@ public class MyImporterBuilder implements FileImporterBuilder {
 
 The importer is where the job will be done. Create a new importer class, for instance *MyImporter* that implements `FileImporter`.
 
-Notice the `setReader()` method. That means you will work with a reader instead directly with files. The system is responsible of setting the reader before the importer you're developing will be executed.
+Notice the `setReader()` method. That means you will work with a reader instead directly with files. The system is responsible for setting the reader before the importer you're developing will be executed.
 
 Add also `LongTask` interface to your class, in order you will be able to use progress and cancel management.
 Your *MyImporter* would look like this:
@@ -112,7 +112,7 @@ You can create an `ImporterUI` class for your importer. It is not mandatory and 
 
 Create a new `ImporterUI` class, for instance *MyImporterUI* that implements [`ImporterUI`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/importer/spi/ImporterUI.html).
 
-Your UI class is responsible of providing the JPanel associated to your importer and set settings value to your *MyImporter* instance. The system will ask for a JPanel, show a setting dialog and then call `unsetup()`. If users validate the settings panel by hitting OK, the `unsetup()` method is called with update set as true and ask the UI to write the setting values.
+Your UI class is responsible for providing the JPanel associated to your importer and set settings value to your *MyImporter* instance. The system will ask for a JPanel, show a setting dialog and then call `unsetup()`. If users validate the settings panel by hitting OK, the `unsetup()` method is called with update set as true and ask the UI to write the setting values.
 The sample below will help you:
 
 ```java
