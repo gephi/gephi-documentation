@@ -110,7 +110,7 @@ You can create an `ImporterUI` class for your importer. It is not mandatory and 
 
 ### Create MyImporterUI
 
-Create a new `ImporterUI` class, for instance *MyImporterUI* that implements [`ImporterUI`](http://gephi.org/docs/api/org/gephi/io/importer/spi/ImporterUI.html).
+Create a new `ImporterUI` class, for instance *MyImporterUI* that implements [`ImporterUI`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/importer/spi/ImporterUI.html).
 
 Your UI class is responsible of providing the JPanel associated to your importer and set settings value to your *MyImporter* instance. The system will ask for a JPanel, show a setting dialog and then call `unsetup()`. If users validate the settings panel by hitting OK, the `unsetup()` method is called with update set as true and ask the UI to write the setting values.
 The sample below will help you:

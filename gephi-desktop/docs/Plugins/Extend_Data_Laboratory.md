@@ -22,7 +22,7 @@ Data Laboratory SPI may seem big, but all interfaces to implement are mostly the
 
 ### The Manipulator interface
 
-The [Manipulator](http://gephi.org/docs/api/org/gephi/datalab/spi/Manipulator.html) interface is the part that most of the interfaces that you will implement share in common. Also, all kinds of manipulators can provide an optional GUI just by returning an implementation of the [ManipulatorUI](https://gephi.org/docs/api/org/gephi/datalab/spi/ManipulatorUI.html) interface.
+The [Manipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/Manipulator.html) interface is the part that most of the interfaces that you will implement share in common. Also, all kinds of manipulators can provide an optional GUI just by returning an implementation of the [ManipulatorUI](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/ManipulatorUI.html) interface.
 
 The interfaces that extend Manipulator to provide specific types of manipulators are:
 
@@ -31,9 +31,9 @@ The interfaces that extend Manipulator to provide specific types of manipulators
 - [GeneralActionsManipulator](http://gephi.org/docs/toolkit/org/gephi/datalab/spi/general/GeneralActionsManipulator.html) - Defines a general action not related to any specific graph element. [PluginGeneralActionsManipulator](http://gephi.org/docs/toolkit/org/gephi/datalab/spi/general/PluginGeneralActionsManipulator.html) is the same but appears in a plugin button that displays a list of general actions (use this when the tool bar does not have enough space for more general actions).
 - [AttributeValueManipulator](http://gephi.org/docs/toolkit/org/gephi/datalab/spi/values/AttributeValueManipulator.html) - Defines a context menu action that manipulates a single cell data (pair of AttributeRow and AttributeColumn).
 - [AttributeColumnsMergeStrategy](http://gephi.org/docs/toolkit/org/gephi/datalab/spi/columns/merge/AttributeColumnsMergeStrategy.html) - Defines an strategy
-- [AttributeRowsMergeStrategy](https://gephi.org/docs/api/org/gephi/datalab/spi/rows/merge/AttributeRowsMergeStrategy.html) - A very special type of manipulator that defines strategies for merging rows to be used by a nodes/edges manipulator or other parts (does not have a place in Data Laboratory GUI by itself but it is currently used by MergeNodes manipulator).
+-- [AttributeRowsMergeStrategy](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/rows/merge/AttributeRowsMergeStrategy.html) - A very special type of manipulator that defines strategies for merging rows to be used by a nodes/edges manipulator or other parts (does not have a place in Data Laboratory GUI by itself but it is currently used by MergeNodes manipulator).
 
-Only [AttributeColumnsManipulator](http://gephi.org/docs/toolkit/org/gephi/datalab/spi/columns/AttributeColumnsManipulator.html) is a bit different from `Manipulator` because its workflow is not the same as all the previous manipulators, and therefore provides its unique interface plus a [AttributeColumnsManipulatorUI](http://gephi.org/docs/toolkit/org/gephi/datalab/spi/columns/AttributeColumnsManipulatorUI.html).
+Only [AttributeColumnsManipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/columns/AttributeColumnsManipulator.html) is a bit different from `Manipulator` because its workflow is not the same as all the previous manipulators, and therefore provides its unique interface plus a [AttributeColumnsManipulatorUI](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/columns/AttributeColumnsManipulatorUI.html).
 
 ## Create a new Manipulator
 
@@ -238,7 +238,7 @@ public class DuplicateColumn implements AttributeColumnsManipulator {
     private String title;
     private AttributeType columnType;
  
-    public void execute(AttributeTable table, AttributeColumn column) {
+    public void execute(Table table, Column column) {
         Lookup.getDefault().lookup(AttributeColumnsController.class).duplicateColumn(table, column, title, columnType);
     }
  
@@ -250,11 +250,11 @@ public class DuplicateColumn implements AttributeColumnsManipulator {
         return "";
     }
  
-    public boolean canManipulateColumn(AttributeTable table, AttributeColumn column) {
+    public boolean canManipulateColumn(Table table, Column column) {
         return true;
     }
  
-    public AttributeColumnsManipulatorUI getUI(AttributeTable table,AttributeColumn column) {
+    public AttributeColumnsManipulatorUI getUI(Table table,Column column) {
         return new DuplicateColumnUI();
     }
  
@@ -278,11 +278,11 @@ public class DuplicateColumn implements AttributeColumnsManipulator {
         this.title = title;
     }
  
-    public AttributeType getColumnType() {
+    public Class getColumnType() {
         return columnType;
     }
  
-    public void setColumnType(AttributeType columnType) {
+    public void setColumnType(Class columnType) {
         this.columnType = columnType;
     }
 }
@@ -294,7 +294,7 @@ Column type and title are set through `DuplicateColumnUI`.
 
 Like in other parts of Gephi, api/spi implementations are exposed with Netbeans Lookup API.
 
-This is done with the [[@ServiceProvider]] annotation. Since this annotation returns a singleton of the service, in order to help the programmer avoid problems with previously set up data, some of the manipulators require a builder that returns instances of the manipulator as the service.
+This is done with the `@ServiceProvider` annotation. Since this annotation returns a singleton of the service, in order to help the programmer avoid problems with previously set up data, some of the manipulators require a builder that returns instances of the manipulator as the service.
 
 But other manipulators are directly exposed as the service with the annotation.
 
@@ -329,7 +329,7 @@ AttributeValueManipulator | ✓
 
 ## Providing a GUI
 
-When your feature needs a GUI you only need to return a [ManipulatorUI](http://gephi.org/docs/api/org/gephi/datalab/spi/ManipulatorUI.html) implementation capable of configuring your feature extra data. Let's see what each method should do with an example:
+When your feature needs a GUI you only need to return a [ManipulatorUI](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/ManipulatorUI.html) implementation capable of configuring your feature extra data. Let's see what each method should do with an example:
 
 ```java
 public class MyManipulatorUI extends JPanel implements ManipulatorUI {
