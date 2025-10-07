@@ -1,5 +1,5 @@
 ---
-id: trivial-graph-format
+id: Trivial_Graph_Format
 title: TGF
 sidebar_position: 10
 ---

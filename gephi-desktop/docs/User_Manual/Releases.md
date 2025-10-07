@@ -1,5 +1,5 @@
 ---
-id: releases
+id: Releases
 title: Releases
 sidebar_position: 2
 ---

@@ -1,5 +1,5 @@
 ---
-id: generator
+id: Generator
 title: Generator
 sidebar_position: 8
 ---

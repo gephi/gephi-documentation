@@ -1,5 +1,5 @@
 ---
-id: pajek-net-format
+id: Pajek_NET_Format
 title: Pajek NET
 sidebar_position: 7
 ---

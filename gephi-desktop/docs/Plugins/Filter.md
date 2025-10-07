@@ -1,5 +1,5 @@
 ---
-id: filter
+id: Filter
 title: Filter
 sidebar_position: 9
 ---

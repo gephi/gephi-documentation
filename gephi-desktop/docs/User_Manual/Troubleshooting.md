@@ -1,5 +1,5 @@
 ---
-id: troubleshooting
+id: Troubleshooting
 title: Troubleshooting
 sidebar_position: 1
 tags:

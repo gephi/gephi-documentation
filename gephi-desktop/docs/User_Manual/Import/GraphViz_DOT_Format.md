@@ -1,5 +1,5 @@
 ---
-id: graphviz-dot-format
+id: GraphViz_DOT_Format
 title: GraphViz DOT
 sidebar_position: 4
 ---

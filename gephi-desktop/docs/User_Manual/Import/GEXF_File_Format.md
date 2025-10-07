@@ -1,5 +1,5 @@
 ---
-id: gexf-file-format
+id: GEXF_File_Format
 title: GEXF
 sidebar_position: 1
 ---

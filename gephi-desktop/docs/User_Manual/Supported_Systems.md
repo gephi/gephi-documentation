@@ -1,5 +1,5 @@
 ---
-id: supported_systems
+id: Supported_Systems
 title: Supported Systems
 sidebar_position: 2
 ---

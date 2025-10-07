@@ -1,5 +1,5 @@
 ---
-id: layout
+id: Layout
 title: Layout
 sidebar_position: 3
 ---

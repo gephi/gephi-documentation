@@ -1,5 +1,5 @@
 ---
-id: preview-renderer
+id: Preview_renderer
 title: Preview renderer
 sidebar_position: 11
 ---

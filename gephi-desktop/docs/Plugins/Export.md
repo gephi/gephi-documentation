@@ -1,5 +1,5 @@
 ---
-id: export
+id: Export
 title: Export
 sidebar_position: 7
 ---

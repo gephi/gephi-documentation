@@ -1,5 +1,5 @@
 ---
-id: datasets
+id: Datasets
 title: Datasets
 sidebar_position: 4
 ---

@@ -1,5 +1,5 @@
 ---
-id: localization
+id: Localization
 title: Localization
 sidebar_position: 2
 ---

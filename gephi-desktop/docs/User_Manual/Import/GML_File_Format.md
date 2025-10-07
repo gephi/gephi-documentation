@@ -1,5 +1,5 @@
 ---
-id: gml-file-format
+id: GML_File_Format
 title: GML
 sidebar_position: 5
 ---

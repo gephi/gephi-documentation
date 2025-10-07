@@ -1,5 +1,5 @@
 ---
-id: graphml-format
+id: GraphML_Format
 title: GraphML
 sidebar_position: 3
 ---

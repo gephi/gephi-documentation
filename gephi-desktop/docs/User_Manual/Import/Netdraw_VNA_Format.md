@@ -1,5 +1,5 @@
 ---
-id: netdraw-vna-format
+id: Netdraw_VNA_Format
 title: Netdraw VNA
 sidebar_position: 6
 ---

@@ -1,5 +1,5 @@
 ---
-id: import
+id: Import
 title: Import
 sidebar_position: 5
 ---

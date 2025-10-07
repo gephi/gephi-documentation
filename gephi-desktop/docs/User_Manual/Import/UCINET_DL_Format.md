@@ -1,5 +1,5 @@
 ---
-id: ucinet-dl-format
+id: UCINET_DL_Format
 title: UCINET DL
 sidebar_position: 8
 ---

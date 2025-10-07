@@ -1,5 +1,5 @@
 ---
-id: statistics
+id: Statistics
 title: Statistics
 sidebar_position: 4
 ---

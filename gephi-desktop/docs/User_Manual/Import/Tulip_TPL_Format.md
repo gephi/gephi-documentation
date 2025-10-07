@@ -1,5 +1,5 @@
 ---
-id: tulip-tpl-format
+id: Tulip_TPL_Format
 title: Tulip TPL
 sidebar_position: 9
 ---

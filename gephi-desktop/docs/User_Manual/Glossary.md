@@ -1,5 +1,5 @@
 ---
-id: glossary
+id: Glossary
 title: Glossary
 sidebar_position: 2
 ---

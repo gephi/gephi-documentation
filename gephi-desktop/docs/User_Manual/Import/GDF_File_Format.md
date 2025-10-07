@@ -1,5 +1,5 @@
 ---
-id: gdf-file-format
+id: GDF_File_Format
 title: GDF
 sidebar_position: 2
 ---
