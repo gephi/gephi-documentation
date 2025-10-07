@@ -1,6 +1,6 @@
 ---
-id: Import_CSV_Data
-title: Import CSV Data
+id: CSV_Format
+title: CSV Format
 sidebar_position: 5
 ---
 
