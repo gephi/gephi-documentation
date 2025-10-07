@@ -1,0 +1,68 @@
+name: Documentation Issue
+description: Suggest improvements or report problems with the Gephi documentation
+title: "[Documentation]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to help improve Gephi's documentation!
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What type of issue are you submitting?
+      options:
+        - Documentation Suggestion
+        - Report a Problem
+        - Question about Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: documentation-area
+    attributes:
+      label: Documentation Area
+      description: Which part of the documentation does this concern?
+      options:
+        - Gephi Desktop - User Manual
+        - Gephi Desktop - Plugin Development
+        - Gephi Desktop - Developer Documentation
+        - Gephi Lite - User Manual
+        - Gephi Lite - Integration/Deployment
+        - Website/General
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Please provide a clear and detailed description of your suggestion or the problem you encountered.
+      placeholder: |
+        - What did you expect to find in the documentation?
+        - What is missing, unclear, or incorrect?
+        - What improvements would you suggest?
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location (if applicable)
+      description: If this concerns a specific page, please provide the URL or page title.
+      placeholder: "e.g., https://gephi.org/docs/... or 'Import CSV Data' page"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or examples that might be helpful.
+    validations:
+      required: false
+
