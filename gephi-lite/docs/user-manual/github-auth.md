@@ -9,7 +9,7 @@ However, many people now prefer working in the cloud with their favorite applica
 That’s why we provide an optional **GitHub integration**.
 If you want to use it you have to first authenticate using your GitHub account. Once onde you’ll be able to open and save graphs directly from [Github Gist](https://gist.github.com/).
 
-Using Github Gist allow you to save your graph on Github Cloud but also to share then publicly if you want. Read the [](../integration/permalinks.md)
+Using Github Gist allow you to save your graph on Github Cloud but also to share then publicly if you want.
 
 ## Authentication
 
