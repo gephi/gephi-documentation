@@ -6,15 +6,18 @@ sidebar_position: 6
 
 Longitudinal (also called dynamic) networks are simply networks that evolve chronologically. If you imagine the network of your friends, the number of nodes, connections and attribute values grow and change as time passes. We call these dynamic attributes, because they have values associated with a particular moment.
 
-![intro-longitudinal](/docs/User_Manual/Import_Dynamic_Data/00_intro-longitudinal.png)
-
 *Longitudinal Networks*
 
-There are two ways to model a longitudinal network, either a collection of networks where each network is a particular point in time (a day, a month, ...) or a slice network where each element has an interval of existence. This can also be described as Discrete vs. Continuous representations of time. Gephi uses the latter, also known as **Intervals**, because it's more flexible.
+Gephi supports two fundamental ways to represent time in dynamic networks:
 
-**For example:**
+1. **Timestamps**: Discrete points in time (e.g., specific dates or moments)
+2. **Intervals**: Time ranges with start and end bounds (e.g., periods of existence)
 
-Imagine a network of three nodes for the years 2007, 2008 and 2009. The years these nodes are present can be represented either as distinct points in time or as time intervals (as pictured on the left and right sides of the arrow below, respectively). 
+These two time representations **cannot be mixed** within the same graph - you must choose one or the other for your entire network.
+
+**For example with Intervals:**
+
+Imagine a network of three nodes for the years 2007, 2008 and 2009. When using intervals, nodes exist for a duration between a start and end time. 
 
 ![importdynamics-intervals](/docs/User_Manual/Import_Dynamic_Data/01_importdynamics-intervals.png)
 
@@ -22,94 +25,236 @@ The second node, 'n2', is present during all three years and is represented by b
 
 Technically speaking, brackets are used for closed (also known as inclusive) intervals, while parentheses represent open intervals. In other words, dates enclosed within two brackets include both the startpoint and endpoint, whereas dates enclosed within two parentheses begins **after** the startpoint and ends **before** the endpoint. Half-closed intervals that incorporate both, like the [2007, 2009) example above, are also possible.
 
-Check the Data Laboratory to see how intervals are created for each node or edge. When the network is longitudinal, a Time Interval column is present that shows when the interval is present in the graph. You can visualize this by clicking the checkbox next to 'Time intervals as graphics' in the Configuration tab of the Data Laboratory. After enabling the timeline, be sure to adjust the size of the window of the sliding filter of your timeline, otherwise you will receive an error stating that Gephi "cannot animate timeline without an animation interval."
+**For example with Timestamps:**
+
+With timestamps, nodes exist at specific discrete points in time. For instance, if nodes appear at years 2007, 2008, and 2009, each would have a specific timestamp value rather than a range. This is useful when you have snapshot data where each observation represents a distinct moment.
+
+Check the Data Laboratory to see how time is represented for each node or edge. When the network is longitudinal, a Time Interval column is present that shows when elements exist in the graph. You can visualize this by clicking the checkbox next to 'Time intervals as graphics' in the Configuration tab of the Data Laboratory. After enabling the timeline, be sure to adjust the size of the window of the sliding filter of your timeline, otherwise you will receive an error stating that Gephi "cannot animate timeline without an animation interval."
 
 ## Import from GEXF File
 
-The [GEXF](http://gexf.net/format) format includes everything needed to represent longitudinal networks with intervals. You define a single network but add 'start' and 'end' attributes to set when a node/edge appears or vanish.
+The [GEXF](http://gexf.net/format) format includes everything needed to represent longitudinal networks with both timestamps and intervals. You define a single network and configure how time is represented.
 
-### Basic example
+### Time Representation and Time Format
 
-Below is our earlier example with three nodes from 2007 to 2009, but we've added edges to complete the example graph.
+GEXF supports two key attributes for configuring time:
+
+- **timerepresentation**: Choose between `"interval"` (default) or `"timestamp"`
+- **timeformat**: Choose between `"double"` (default), `"date"` (yyyy-mm-dd), or `"dateTime"` (ISO 8601 format with optional timezone)
+
+These attributes are set on the `<graph>` element and apply to the entire network. Remember: you cannot mix timestamp and interval representations in the same file.
+
+### Basic example with Intervals
+
+Below is an example with three nodes from 2007 to 2009, using interval representation with date format.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gexf xmlns="http://www.gexf.net/1.1draft"
+<gexf xmlns="http://gexf.net/1.3"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.gexf.net/1.1draft
-                             http://www.gexf.net/1.1draft/gexf.xsd"
-      version="1.1">
-  <graph mode="dynamic" defaultedgetype="directed">
+       xsi:schemaLocation="http://gexf.net/1.3
+                             http://gexf.net/1.3/gexf.xsd"
+      version="1.3">
+  <graph mode="dynamic" timerepresentation="interval" timeformat="date" defaultedgetype="directed">
     <nodes>
-      <node id="n1" label="Node 1" start="2007" endopen="2009" />
-      <node id="n2" label="Node 2" start="2007" end="2009" />
-      <node id="n3" label="Node 3" start="2008" end="2009" />
+      <node id="n1" label="Node 1" start="2007-01-01" end="2008-12-31" />
+      <node id="n2" label="Node 2" start="2007-01-01" end="2009-12-31" />
+      <node id="n3" label="Node 3" start="2008-01-01" end="2009-12-31" />
     </nodes>
     <edges>
-      <edge source="n1" target="n2" />
-      <edge source="n1" target="n3" start="2008"/>
-      <edge source="n3" target="n2" start="2008" endopen="2009"/>
+      <edge source="n1" target="n2" start="2007-01-01" end="2008-12-31" />
+      <edge source="n1" target="n3" start="2008-01-01" end="2008-12-31"/>
+      <edge source="n3" target="n2" start="2008-01-01" end="2009-12-31"/>
     </edges>
   </graph>
 </gexf>
 ```
 
-**Notice the following important points:**
+**Important points for intervals:**
 
-- We set **mode="dynamic"** to the **graph** element, that is needed, as GEXF can represent static graphs as well
-- Use **start** and **end** for closed intervals (ex: [2007, 2009]) and **startopen** and **endopen** for open (ex: (2008, 2009))
-- Start and end dates for each element are optional. Leaving these empty will create an [-infinity, +infinity] interval. If only one bound is defined like for the second edge, it becomes [2009, +infinity].
+- Set **mode="dynamic"** on the **graph** element (required for dynamic networks)
+- Set **timerepresentation="interval"** (or omit it, as interval is the default)
+- Use **start** and **end** attributes on nodes and edges to define when they exist
+- Both start and end values are **inclusive** in GEXF 1.3
+- Omitting start or end creates infinity bounds (e.g., only `start="2007-01-01"` means [2007-01-01, +infinity])
+- Edges must exist within the time bounds of their source and target nodes
+
+### Basic example with Timestamps
+
+Here's the same network using timestamp representation:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://gexf.net/1.3"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://gexf.net/1.3
+                             http://gexf.net/1.3/gexf.xsd"
+      version="1.3">
+  <graph mode="dynamic" timerepresentation="timestamp" timeformat="date" defaultedgetype="directed">
+    <nodes>
+      <node id="n1" label="Node 1" timestamp="2007-01-01" />
+      <node id="n2" label="Node 2" timestamp="2007-01-01" />
+      <node id="n3" label="Node 3" timestamp="2008-01-01" />
+    </nodes>
+    <edges>
+      <edge source="n1" target="n2" timestamp="2007-01-01" />
+      <edge source="n1" target="n3" timestamp="2008-01-01"/>
+      <edge source="n3" target="n2" timestamp="2008-01-01"/>
+    </edges>
+  </graph>
+</gexf>
+```
+
+**Important points for timestamps:**
+
+- Set **timerepresentation="timestamp"** on the **graph** element (required for timestamp mode)
+- Use **timestamp** attribute on nodes and edges (not start/end)
+- Each element exists at a specific point in time
+- Use **spells** (see below) if an element needs to exist at multiple timestamps
 
 The GEXF specifications, including dynamics, are available in the [GEXF Primer](http://gexf.net/format/primer.html).
 
 ### Dynamic attributes
 
-The example above described how to represent the network topology over time, where nodes and edges are added or remove. Now let's see how to represent values changing over time, for example 'Price'. Below is the same network with a **price** attribute. The attribute definition in the `<attribute> `element is the same as it would be for a static GEXF, but the way that values are written has changed.
+The examples above described how to represent the network topology over time, where nodes and edges are added or removed. Now let's see how to represent attribute values changing over time, for example 'Price'.
+
+#### Dynamic attributes with Intervals
 
 ```xml
-<gexf xmlns="http://www.gexf.net/1.1draft"
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://gexf.net/1.3"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.gexf.net/1.1draft
-                          http://www.gexf.net/1.1draft/gexf.xsd"
-                          version="1.1">
-  <graph mode="dynamic" defaultedgetype="directed">
-    <attributes class="node" mode="dynamic">
+      xsi:schemaLocation="http://gexf.net/1.3
+                          http://gexf.net/1.3/gexf.xsd"
+      version="1.3">
+  <graph mode="dynamic" timerepresentation="interval" timeformat="date" defaultedgetype="directed">
+    <attributes class="node">
       <attribute id="price" title="Price" type="float"/>
     </attributes>
     <nodes>
-      <node id="n1" label="Node 1" start="2007" endopen="2009" >
+      <node id="n1" label="Node 1" start="2007-01-01" end="2008-12-31">
         <attvalues>
-          <attvalue for="price" value="25.5" start="2007"/>
-          <attvalue for="price" value="42.5" start="2008"/>
+          <attvalue for="price" value="25.5" start="2007-01-01" end="2007-12-31"/>
+          <attvalue for="price" value="42.5" start="2008-01-01" end="2008-12-31"/>
         </attvalues>
       </node>
-      <node id="n2" label="Node 2" start="2007" end="2009" >
+      <node id="n2" label="Node 2" start="2007-01-01" end="2009-12-31">
         <attvalues>
-          <attvalue for="price" value="12" start="2008"/>
+          <attvalue for="price" value="12.0" start="2008-01-01"/>
         </attvalues>
       </node>
-      <node id="n3" label="Node 3" start="2008" end="2009" >
+      <node id="n3" label="Node 3" start="2008-01-01" end="2009-12-31">
         <attvalues>
-          <attvalue for="price" value="40.5" start="2008" end="2009" />
+          <attvalue for="price" value="40.5" start="2008-01-01" end="2009-12-31" />
         </attvalues>
       </node>
     </nodes>
     <edges>
-      <edge source="n1" target="n2" />
-      <edge source="n1" target="n3" start="2008"/>
-      <edge source="n3" target="n2" start="2008" endopen="2009"/>
+      <edge source="n1" target="n2" start="2007-01-01" end="2008-12-31"/>
+      <edge source="n1" target="n3" start="2008-01-01" end="2008-12-31"/>
+      <edge source="n3" target="n2" start="2008-01-01" end="2009-12-31"/>
     </edges>
   </graph>
 </gexf>
 ```
 
-Keep in mind the following 
+#### Dynamic attributes with Timestamps
 
-- To represent several values over time, the idea is to repeat the same **attvalue** for each period, with the same for but with different values and **start/end**
-- It's not mandatory to set a value everywhere, in case of missing the default value is used
-- For the node 'n2', the value '12' starts in 2008 and no end period is specified. That gives the interval [2008, +infinity] which means the value remains '12' in 2009 and after.
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://gexf.net/1.3"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://gexf.net/1.3
+                          http://gexf.net/1.3/gexf.xsd"
+      version="1.3">
+  <graph mode="dynamic" timerepresentation="timestamp" timeformat="date" defaultedgetype="directed">
+    <attributes class="node">
+      <attribute id="price" title="Price" type="float"/>
+    </attributes>
+    <nodes>
+      <node id="n1" label="Node 1" timestamp="2007-01-01">
+        <attvalues>
+          <attvalue for="price" value="25.5" timestamp="2007-01-01"/>
+          <attvalue for="price" value="42.5" timestamp="2008-01-01"/>
+        </attvalues>
+      </node>
+      <node id="n2" label="Node 2" timestamp="2007-01-01">
+        <attvalues>
+          <attvalue for="price" value="10.0" timestamp="2007-01-01"/>
+          <attvalue for="price" value="12.0" timestamp="2008-01-01"/>
+        </attvalues>
+      </node>
+      <node id="n3" label="Node 3" timestamp="2008-01-01">
+        <attvalues>
+          <attvalue for="price" value="40.5" timestamp="2008-01-01" />
+        </attvalues>
+      </node>
+    </nodes>
+    <edges>
+      <edge source="n1" target="n2" timestamp="2007-01-01"/>
+      <edge source="n1" target="n3" timestamp="2008-01-01"/>
+      <edge source="n3" target="n2" timestamp="2008-01-01"/>
+    </edges>
+  </graph>
+</gexf>
+```
 
-The GEXF specifications, including dynamics attributes are available in the [GEXF Primer](https://gephi.org/gexf/format/primer.html).
+**Keep in mind:**
+
+- To represent several values over time, repeat the same **attvalue** element with different time bounds and values
+- It's not mandatory to set a value for all time periods; if missing, the default value is used
+- For intervals: if no end is specified, the value extends to infinity (e.g., [2008-01-01, +infinity])
+- For timestamps: each attvalue represents the value at that specific point in time
+- Attribute values must fall within the time bounds of their parent element (node or edge)
+
+The GEXF specifications, including dynamics attributes, are available in the [GEXF Primer](https://gephi.org/gexf/format/primer.html).
+
+### Spells: Multiple time periods for elements
+
+If a node or edge needs to exist at multiple non-contiguous time periods, use the `<spells>` element. This works with both interval and timestamp representations.
+
+#### Spells with Intervals
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://gexf.net/1.3" version="1.3">
+  <graph mode="dynamic" timerepresentation="interval" timeformat="date">
+    <nodes>
+      <node id="n1" label="Node 1">
+        <spells>
+          <spell start="2007-01-01" end="2007-12-31" />
+          <spell start="2009-01-01" end="2009-12-31" />
+        </spells>
+      </node>
+    </nodes>
+  </graph>
+</gexf>
+```
+
+In this example, Node 1 exists in 2007 and 2009 but not in 2008. **Important:** Intervals cannot overlap within spells - each spell must be separate and non-overlapping.
+
+#### Spells with Timestamps
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://gexf.net/1.3" version="1.3">
+  <graph mode="dynamic" timerepresentation="timestamp" timeformat="date">
+    <nodes>
+      <node id="n1" label="Node 1">
+        <spells>
+          <spell timestamp="2007-01-01" />
+          <spell timestamp="2008-06-15" />
+          <spell timestamp="2009-12-31" />
+        </spells>
+      </node>
+    </nodes>
+  </graph>
+</gexf>
+```
+
+In this example, Node 1 exists at three specific points in time.
+
+**Note:** If spells are provided on an element, any `start`, `end`, or `timestamp` attributes directly on that element will be ignored.
 
 ### Dynamic weight
 
@@ -118,7 +263,7 @@ Normally an edge's weight is directly defined in the edge element with a particu
 The rule is to define an edge attribute with the **weight** keyword for identifier. Then, use multiple 'attvalue' like explained above to set different values over time.
 
 ```xml
-<attributes class="edge" mode="dynamic">
+<attributes class="edge">
    <attribute id="weight" title="Weight" type="float"/>
 </attributes>
 ```
@@ -142,121 +287,110 @@ Imagine a social network where each node represents a friend of yours and one of
 ![transformlongitudinal-datalab3](/docs/User_Manual/Import_Dynamic_Data/04_transformlongitudinal-datalab3.png)
 
 
-## Use Time Frame Import with several static files
+## Import Multiple Static Files as Dynamic Graph
 
-**NOTE: Outdated for Gephi 0.9.1, this documentation needs to be updated. Check https://github.com/gephi/gephi/issues/1546**
+Starting with Gephi 0.9.1, you can create a dynamic network by importing multiple static "snapshot" files, where each file represents the network at a different point in time. This is useful when you have separate files for different time periods and want to see how the network evolves.
 
-This method can create a longitudinal network from a set of static "snaphsots" files. If you have a complete network at different point in time and want to see how both the network and its attributes changes over time this is the right method.
+### Using "Slice" Mode with Timestamps
 
-Note that this method implementation is still experimental and may not work in all cases. Be sure to verify the following points:
+The key to this approach is using the **mode="slice"** attribute in your GEXF files, along with **timerepresentation="timestamp"** and a **timestamp** attribute on the graph element. Each file represents the network at a specific timestamp.
 
-- Your node identifiers are **exactly** the same between the files. If not, at least the labels are (you can choose in the wizard).
-- If GEXF, your network mode is set at **static**
-- There is no previous graph in the workspace when you start importing Time Frame
-- Attribute columns are the same in all files
+#### Example: Three Network Snapshots
 
-### Dataset
+Here are three GEXF files, each representing the network at a different timestamp:
 
-We can take for instance three GEXF files and say each of this file is for a particular year, the network in 2007, in 2008 and in 2009.
-
-The **static** network in 2007, notice the price attribute:
+**File 1: network_t1.gexf (timestamp=1)**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gexf xmlns="http://www.gexf.net/1.1draft" version="1.1">
-  <graph mode="static" defaultedgetype="directed">
-    <attributes class="node" type="static">
-      <attribute id="price" title="Price" type="int"/>
-    </attributes>
+<gexf xmlns="http://gexf.net/1.3" version="1.3">
+  <graph mode="slice" defaultedgetype="directed" timerepresentation="timestamp" timestamp="1">
     <nodes>
-      <node id="1" label="Node 1">
-        <attvalue for="price" value="12"/>
-      </node>
-      <node id="2" label="Node 2">
-        <attvalue for="price" value="8"/>
-      </node>
-      <node id="3" label="Node 3">
-        <attvalue for="price" value="5"/>
-      </node>
+      <node id="n0" label="Bob"/>
+      <node id="n1" label="Jack"/>
     </nodes>
     <edges>
-      <edge source="1" target="2" weight="1" />
-      <edge source="1" target="3" weight="2" />
+      <edge weight="1" source="n0" target="n1"/>
     </edges>
   </graph>
 </gexf>
 ```
 
-The **static** network in 2008, the node '3' disappeared and a node '4' appears. Prices and edge's weight have changed also.
+**File 2: network_t2.gexf (timestamp=2)**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gexf xmlns="http://www.gexf.net/1.1draft" version="1.1">
-  <graph mode="static" defaultedgetype="directed">
-    <attributes class="node" type="static">
-      <attribute id="price" title="Price" type="int"/>
-    </attributes>
+<gexf xmlns="http://gexf.net/1.3" version="1.3">
+  <graph mode="slice" defaultedgetype="directed" timerepresentation="timestamp" timestamp="2">
     <nodes>
-      <node id="1" label="Node 1">
-        <attvalue for="price" value="15"/>
-      </node>
-      <node id="2" label="Node 2">
-        <attvalue for="price" value="6"/>
-      </node>
-      <node id="4" label="Node 4">
-        <attvalue for="price" value="8"/>
-      </node>
+      <node id="n0" label="Bob"/>
+      <node id="n1" label="Jack"/>
+      <node id="n2" label="Sue"/>
+      <node id="n3" label="Beth"/>
     </nodes>
     <edges>
-      <edge source="1" target="2" weight="4" />
-      <edge source="1" target="4" weight="3" />
-      <edge source="2" target="4" weight="1" />
+      <edge weight="1" source="n0" target="n1"/>
+      <edge weight="1" source="n3" target="n2"/>
     </edges>
   </graph>
 </gexf>
 ```
 
-The **static** network in 2009, the node '3' is back, the node '2' is gone and priced changed again.
+**File 3: network_t3.gexf (timestamp=3)**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gexf xmlns="http://www.gexf.net/1.1draft" version="1.1">
-  <graph mode="static" defaultedgetype="directed">
-    <attributes class="node" type="static">
-      <attribute id="price" title="Price" type="int"/>
-    </attributes>
+<gexf xmlns="http://gexf.net/1.3" version="1.3">
+  <graph mode="slice" defaultedgetype="directed" timerepresentation="timestamp" timestamp="3">
     <nodes>
-      <node id="1" label="Node 1">
-        <attvalue for="price" value="10"/>
-      </node>
-      <node id="3" label="Node 3">
-        <attvalue for="price" value="3"/>
-      </node>
-      <node id="4" label="Node 4">
-        <attvalue for="price" value="12"/>
-      </node>
+      <node id="n0" label="Bob"/>
+      <node id="n1" label="Jack"/>
+      <node id="n2" label="Sue"/>
+      <node id="n3" label="Beth"/>
     </nodes>
     <edges>
-      <edge source="1" target="3" weight="5" />
+      <edge weight="1" source="n1" target="n2"/>
+      <edge weight="1" source="n3" target="n0"/>
     </edges>
   </graph>
 </gexf>
 ```
 
-### Import in Gephi
+### Importing Slice Files in Gephi
 
-Do the following steps on a clear project to import your dataset:
+To import these files:
 
-- **Step 1:** Import the first file and select **Time Frame** in the import report, click on OK. That will display a settings dialog.
+1. **Open Gephi** and go to File > Open
+2. **Select all the slice files** you want to import (you can select multiple files)
+3. In the **Import report**, select the **Merge** option
+4. Click **OK**
 
-![importtimeframe1](/docs/User_Manual/Import_Dynamic_Data/05_importtimeframe1.png)
+Gephi will merge all the slices into a single dynamic graph. The result is a longitudinal network where:
+- Nodes and edges have time intervals based on when they appear in the different snapshots
+- All attributes become dynamic attributes
+- Edge weights are also dynamic
 
-- **Step 2:** Select either a Date or a real number as a time format. Real numbers is the default choice, here we put the year 2007. Click on OK, the file is imported.
+### Important Notes
 
-![importtimeframe2](/docs/User_Manual/Import_Dynamic_Data/06_importtimeframe2.png)
+- **Node identifiers must be exactly the same** across files to be recognized as the same node
+- Use **mode="slice"** in each file
+- Set **timerepresentation="timestamp"** in each file
+- Each file must have a different **timestamp** value on the graph element
+- You can use different time formats (double, date, dateTime) - just ensure consistency across all files
+- You can also use intervals by setting **timerepresentation="interval"** and using interval bounds instead of a single timestamp
+- Start with an empty workspace when importing to avoid conflicts
 
-- **Step 3:** You can now do the same for all other files, in a chronological order. For the second file select 2008, then 2009 etc.
+## Summary: Choosing the Right Approach
 
-![importtimeframe3](/docs/User_Manual/Import_Dynamic_Data/07_importtimeframe3.png)
+Here's a quick guide to help you choose the best method for your dynamic network:
 
-The result is a longitudinal network in Gephi where nodes and edges have time intervals according how they were present in the different files. Similarly all attributes are dynamic attributes. The 'Price' attribute in the dataset in a **DYNAMIC_INTEGER** column and each value is associated with its interval. Moreover the edge's weight itself is dynamic. 
+| Scenario | Recommended Approach |
+|----------|---------------------|
+| You have one file with all dynamic data already defined | Use a single GEXF file with **mode="dynamic"** and choose interval or timestamp representation |
+| You have multiple snapshot files (one per time period) | Use multiple GEXF files with **mode="slice"** and import them together with the Merge option |
+| You have static data with time columns | Import the static file and use the **Merge Columns** manipulator in Data Laboratory |
+| Your data represents durations or periods of existence | Use **timerepresentation="interval"** with start/end attributes |
+| Your data represents discrete moments or observations | Use **timerepresentation="timestamp"** with timestamp attributes |
+| You need an element to exist at multiple non-contiguous times | Use the **spells** element with multiple spell entries |
+
+**Remember:** You cannot mix interval and timestamp representations in the same graph - choose one and use it consistently throughout your data. 
