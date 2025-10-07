@@ -1,6 +1,6 @@
 ---
 id: CSV_Format
-title: CSV Format
+title: CSV
 sidebar_position: 5
 ---
 
