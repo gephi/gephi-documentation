@@ -7,7 +7,7 @@ This documentation has been written by the Gephi Lite developer team to help use
 
 For beginners we recommend starting by:
 
-- the official [Gephi Lite 101 tutorial](https://gephi.org/101/lite)
+- the official [Gephi Lite quickstart tutorial](https://gephi.org/quickstart/#gephi-lite)
 - [Dr. Verónica Espinoza tutorial](https://medium.com/@vespinozag/learn-how-to-make-a-network-in-gephi-lite-and-add-images-to-the-nodes-i-give-you-the-gexf-file-76635f3aab53)
 
 You can browse tow different sections:
