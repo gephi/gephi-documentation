@@ -27,6 +27,12 @@ const config: Config = {
     locales: ["en"],
   },
   themeConfig: {
+    matomo: {
+      matomoUrl: "https://matomo.ouestware.com/",
+      siteId: "34",
+      phpLoader: "matomo.php",
+      jsLoader: "matomo.js",
+    },
     navbar: {},
     footer: {
       style: "dark",
