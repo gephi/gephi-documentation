@@ -6,7 +6,7 @@ sidebar_position: 4
 
 The Gephi sample datasets below are available in various formats (GEXF, GDF, GML, NET, GraphML, DL, DOT). Feel free to add new datasets, but be sure to cite the original authors.
 
-**Supported graph formats are described [here](./Import).**
+**Supported graph formats are described [here](/desktop/User_Manual/Import).**
 
 Gephi can open zipped files directly.
 
