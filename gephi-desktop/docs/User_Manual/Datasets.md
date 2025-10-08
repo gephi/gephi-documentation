@@ -63,3 +63,4 @@ Some of the above datasets are from:
 ## Other network data repositories
 - [SNAP data](http://snap.stanford.edu/data)
 - [UC Irvine Network Data Repository](http://networkdata.ics.uci.edu/)
+- [GephiDatasets](https://github.com/Ifeanyi55/GephiDatasets)
