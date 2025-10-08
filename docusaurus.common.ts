@@ -117,6 +117,7 @@ const config: Config = {
       additionalLanguages: ["java"],
     },
   },
+  plugins: ["docusaurus-plugin-matomo"],
 };
 
 export default config;
