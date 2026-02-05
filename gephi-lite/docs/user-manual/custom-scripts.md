@@ -10,7 +10,7 @@ In many places, this lets you write JavaScript code instead of using the standar
 
 From the **Filters** menu, choosing **Custom script** opens the script editor, allowing you to implement this function:
 
-````js
+```js
 /**
  * Define a custom filter function.
  * The function is executed for each node.
@@ -24,38 +24,42 @@ From the **Filters** menu, choosing **Custom script** opens the script editor, a
 function filter(id, attributes, graph) {
   //
   // Your code goes here
-  //~~~~~~~~~~~~~~~~~~~~
-  //
-  // Write here your own function that filter nodes.
-  // For each nodes, this function will be called, and if its result is true, the node is kept.
-  //
-  // Example 1: keeping nodes that have a property 'age' superior than 18
-  // --------------------------------------------------------------------
-  // ```
-  // return attributes.age > 18;
-  // ```
-  //
-  // Example 2: filtering node that have a property 'age' below 18 and with a degree inferior to 10
-  // ----------------------------------------------------------------------------------------------
-  // ```
-  // return attributes.age < 18 ? graph.degree(id) < 10 : true;
-  // ```
-  //
-  // Example 3: filtering nodes on which the property 'job' is not defined
-  // ---------------------------------------------------------------------
-  // ```
-  // return attributes.job !== undefined;
-  // ```
   //
   return true;
 }
-````
+```
+
+### Examples
+
+- Keep nodes that have a property 'age' superior than `18` :
+
+```js
+function filter(id, attributes, graph) {
+  return attributes.age > 18;
+}
+```
+
+- Filtering node that have a property 'age' below 18 and with a degree inferior to 10 :
+
+```js
+function filter(id, attributes, graph) {
+  return attributes.age < 18 && graph.degree(id) < 10;
+}
+```
+
+- Filtering nodes on which the property 'job' is not defined
+
+```js
+function filter(id, attributes, graph) {
+  return attributes.job !== undefined;
+}
+```
 
 ## Custom layout
 
 In the **Layout** menu, selecting **Custom layout** opens the script editor, where you can implement this function:
 
-````js
+```js
 /**
  * Function that returns coordinates for the specified node.
  *
@@ -68,32 +72,37 @@ In the **Layout** menu, selecting **Custom layout** opens the script editor, whe
 function nodeCoordinates(id, attributes, index, graph) {
   //
   // Your code goes here
-  //~~~~~~~~~~~~~~~~~~~~
   //
-  // Write here your own function that spatialized nodes.
-  // For each node, this function will be called to get its coordinates.
-  //
-  // Example 1: A random layout on a 1000x1000 space
-  // ------------------------------------------------------------------------
-  // ```
-  // return { x: Math.random() * 1000, y: Math.random() * 1000 };
-  // ```
-  //
-  // Example 2: Circular layout
-  // ----------------------------------------------------------------------
-  // ```
-  // return { x: Math.cos(index * (Math.PI *2) / graph.order) * 500, y: Math.sin(index * (Math.PI *2) / graph.order) * 500 };
-  // ```
-  //
+  return { x: attributes.x, y: attributes.y };
+}
+```
+
+### Examples
+
+- Random layout on a 1000x1000 space
+
+```js
+function nodeCoordinates(id, attributes, index, graph) {
   return { x: Math.random() * 1000, y: Math.random() * 1000 };
 }
-````
+```
+
+- Circular layout
+
+```js
+function nodeCoordinates(id, attributes, index, graph) {
+  return {
+    x: Math.cos((index * (Math.PI * 2)) / graph.order) * 500,
+    y: Math.sin((index * (Math.PI * 2)) / graph.order) * 500,
+  };
+}
+```
 
 ## Scripted node/edge attribute
 
 On the **Data** page, choosing **Create nodes scripted attribute** in the **Data creation** menu opens the script editor, allowing you to implement this function:
 
-````js
+```js
 /**
  * Function that returns a new attribute value for the specified node/edge.
  *
@@ -106,27 +115,28 @@ On the **Data** page, choosing **Create nodes scripted attribute** in the **Data
 function addAttribut(id, attributes, index, graph) {
   //
   // Your code goes here
-  //~~~~~~~~~~~~~~~~~~~~
-  //
-  // Write here your own function that returns the value for your new attribut.
-  //
-  // Example 1: If you have an attribut named 'valid' which take 0 or 1,
-  // you can cast it into a boolean
-  // ------------------------------------------------------------------------
-  // ```
-  // return attributes.valid === 1;
-  // ```
-  //
-  // Example 2: If you have attributs named 'firstname' and 'lastname'
-  // you can concatenate them (usefull for graph label)
-  // -----------------------------------------------------------------------
-  // ```
-  // return (attributes.firstname || "") + " " + (attributes.lastname || ");
-  // ```
   //
   return Math.random();
 }
-````
+```
+
+### Examples
+
+- If you have an attribut named 'valid' which take 0 or 1 and you want to cast it into a boolean
+
+```js
+function addAttribut(id, attributes, index, graph) {
+  return attributes.valid === 1;
+}
+```
+
+- If you have attributs named 'firstname' and 'lastname' and you want to concatenate them (usefull for graph label)
+
+```js
+function addAttribut(id, attributes, index, graph) {
+  return (attributes.firstname || "") + " " + (attributes.lastname || ");
+}
+```
 
 ## Script editor
 
