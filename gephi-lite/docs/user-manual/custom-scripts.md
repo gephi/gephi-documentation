@@ -39,7 +39,7 @@ function filter(id, attributes, graph) {
 }
 ```
 
-- Filtering node that have a property 'age' below 18 and with a degree inferior to 10 :
+- Keep nodes that have a property 'age' below 18 and with a degree inferior to 10 :
 
 ```js
 function filter(id, attributes, graph) {
@@ -47,7 +47,7 @@ function filter(id, attributes, graph) {
 }
 ```
 
-- Filtering nodes on which the property 'job' is not defined
+- Keep nodes on which the property 'job' is defined
 
 ```js
 function filter(id, attributes, graph) {
@@ -110,9 +110,9 @@ On the **Data** page, choosing **Create nodes scripted attribute** in the **Data
  * @param {GraphNode} attributes Attributes of the node/edge
  * @param {number} index The index position of the node/edge in the graph
  * @param {AbstractGraph<GraphNode, GraphEdge>} graph Graphology instance (https://graphology.github.io/)
- * @returns number|string|boolean|null|undefined" The value of the new node/edge's attribut
+ * @returns number|string|boolean|null|undefined" The value of the new node/edge's attribute
  */
-function addAttribut(id, attributes, index, graph) {
+function addAttribute(id, attributes, index, graph) {
   //
   // Your code goes here
   //
@@ -122,10 +122,10 @@ function addAttribut(id, attributes, index, graph) {
 
 ### Examples
 
-- If you have an attribut named 'valid' which take 0 or 1 and you want to cast it into a boolean
+- If you have an attribute named 'valid' which take 0 or 1 and you want to cast it into a boolean
 
 ```js
-function addAttribut(id, attributes, index, graph) {
+function addAttribute(id, attributes, index, graph) {
   return attributes.valid === 1;
 }
 ```
@@ -133,7 +133,7 @@ function addAttribut(id, attributes, index, graph) {
 - If you have attributs named 'firstname' and 'lastname' and you want to concatenate them (usefull for graph label)
 
 ```js
-function addAttribut(id, attributes, index, graph) {
+function addAttribute(id, attributes, index, graph) {
   return (attributes.firstname || "") + " " + (attributes.lastname || ");
 }
 ```
