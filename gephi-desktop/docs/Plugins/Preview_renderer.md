@@ -1,289 +1,148 @@
 ---
 id: Preview_renderer
 title: Preview renderer
-sidebar_position: 11
+sidebar_position: 13
 ---
 
-## Introduction
+Preview renderers control the publication-oriented view used on screen and in SVG/PDF export. They do not change the Overview visualization engine. A renderer consumes preview `Item` objects and draws them to one or more `RenderTarget`s.
 
-Preview is a highly customizable module and plug-ins can implement new renderers to display additional elements on screen, for instance hulls for groups. It's also possible to overwrite existing renderers and replace node or edge aspect.
+Add `preview-api` and `org-openide-util-lookup`. Add `preview-plugin` only if you intentionally extend a built-in renderer or use its item implementation classes.
 
-Create a new plugin module, that we will call **MyRenderer**, you can start this tutorial.
+## Understand the rendering pipeline
 
-**One can find renderers examples in the [PreviewPlugin](https://github.com/gephi/gephi/tree/master/modules/PreviewPlugin) module.**
+For each refresh Gephi:
 
-### How renderers work
+1. Runs the required `ItemBuilder`s to create preview items from the graph.
+2. Calls each renderer's `preProcess()` once.
+3. Uses `isRendererForitem()` to select a renderer for each item.
+4. Calls `render()` for every accepted item.
+5. Calls `postProcess()` once.
 
-Renderers describe how a particular item is rendered and has the code to dray on a rendering target (Java2D, SVG or PDF). Items are for example the node or edges of the graph and are given to renderers to be drawn. Each item (e.g. node, edge) should have its renderer.
+`render()` can run thousands of times. Put global aggregation in `preProcess()`, per-item prepared values in `Item.setData()`, and global prepared values in `PreviewProperties`. Registered renderers are singleton services: do not store workspace/render mutable state in fields.
 
-Rendering is a four-steps process:
-
-1. First the `preProcess()` method is called on all renderers to let them initialize additional attributes for their items. The best example is the edge renderer which will initialize the source and target position in the `EdgeItem` object during this phase. In general the `preProcess()` method is the best for complex algorithms or gathering data from other items. Note that the `preProcess()` method is called only once per refresh, unlike `render()` which is called many times.
-2. The `isRendererForitem()` is then used to determine which renderer should be used to render an item. The method provides access to the preview properties. For instance, if the properties says the edge display is disabled, the edge renderer should return false for every item. Note that nothing avoids several renderer to returns true for the same item.
-3. The `render()` method is finally called for every item which the renderer returned `true` at `isRendererForitem()`. It receives the properties and the render target. It uses the item attributes and properties to determine item aspects and the render target to obtain the canvas.
-4. Finally, the `postProcess()` method is called once for each renderer. It can be used to finalize the rendering, for instance to add legends or other global elements.
-
-If you want to create your own `Item` look at [[HowTo add a preview item]]
-
-## Create a new Renderer
-
-### Set Dependencies
-
-Add `preview-api` and `org-openide-util-lookup` modules as dependencies for your plugin module. See [[How To Set Module Dependencies]].
-
-### Create new Renderer
-
-Create a new renderer **`MyRenderer`** class, which implements `Renderer`.
-
-Add `@ServiceProvider` annotation to your renderer class, so it is detected by the system.
-
-Here is how it should look like:
+## Register a renderer
 
 ```java
-@ServiceProvider(service = Renderer.class)
-public class MyRenderer implements Renderer {
- 
-    public String getDisplayName(){
-        //return user friendly name for the renderer
-    }
- 
-    public void preProcess(PreviewModel previewModel) {
-        //TODO
-    }
- 
-    public void render(Item item, RenderTarget target, PreviewProperties properties) {
-        //TODO
-    }
-    
-    public void postProcess(PreviewModel previewModel, RenderTarget target, PreviewProperties properties) {
-        //TODO
-    }
- 
+@ServiceProvider(service = Renderer.class, position = 500)
+public final class NodeHaloRenderer implements Renderer {
+    private static final String ENABLED = "org.example.nodeHalo.enabled";
+
+    @Override public String getDisplayName() { return "Node halo"; }
+
+    @Override
     public PreviewProperty[] getProperties() {
-        //TODO
+        return new PreviewProperty[] {
+            PreviewProperty.createProperty(
+                this, ENABLED, Boolean.class,
+                "Show node halos",
+                "Draws a halo around every node.",
+                PreviewProperty.CATEGORY_NODES
+            ).setValue(Boolean.TRUE)
+        };
     }
- 
+
+    @Override public void preProcess(PreviewModel model) { }
+
+    @Override
     public boolean isRendererForitem(Item item, PreviewProperties properties) {
-        //TODO
+        return Item.NODE.equals(item.getType())
+            && properties.getBooleanValue(ENABLED);
     }
- 
-    public boolean needsItemBuilder(ItemBuilder itemBuilder, PreviewProperties properties) {
-        //TODO
+
+    @Override
+    public boolean needsItemBuilder(
+            ItemBuilder builder, PreviewProperties properties) {
+        return ItemBuilder.NODE_BUILDER.equals(builder.getType())
+            && properties.getBooleanValue(ENABLED);
     }
-    
+
+    @Override
+    public void render(
+            Item item, RenderTarget target, PreviewProperties properties) {
+        if (target instanceof G2DTarget g2d) {
+            renderG2D(item, g2d);
+        } else if (target instanceof SVGTarget svg) {
+            renderSVG(item, svg);
+        } else if (target instanceof PDFTarget pdf) {
+            renderPDF(item, pdf);
+        }
+    }
+
+    @Override
     public CanvasSize getCanvasSize(Item item, PreviewProperties properties) {
-        //TODO
+        float x = item.getData("x");
+        float y = item.getData("y");
+        float diameter = item.<Float>getData("size") + 8f;
+        return new CanvasSize(
+            x - diameter / 2f, y - diameter / 2f,
+            diameter, diameter);
     }
-    
+
+    @Override
+    public void postProcess(
+            PreviewModel model, RenderTarget target,
+            PreviewProperties properties) { }
+
+    // renderG2D, renderSVG, and renderPDF use each target's drawing API.
 }
 ```
 
-### Implement the `isRendererForItem`
+The `position` determines renderer order. Use a unique, namespaced property ID. `needsItemBuilder()` should return false when the renderer is disabled so Preview can avoid unnecessary item creation.
 
-Each item returns a different value for its `getType()` method so it's easy to know if the item is a node, an edge or a label.
+The standard node builder stores `x`, `y`, `size`, and `color`; edge and label builders add their own data. If your renderer needs data not supplied by a standard item, write an `ItemBuilder` for a custom item type instead of overloading unrelated keys.
 
-The method also receives the current properties and can query values.
+## Support every relevant target
 
-Here is the code from the edge arrow renderer that only works when items are non-directed edges:
+The default targets expose different drawing backends:
 
-```java
-public boolean isRendererForitem(Item item, PreviewProperties properties) {
-    return item.getType().equals(Item.EDGE) && properties.getBooleanValue(PreviewProperty.DIRECTED)
-                && (Boolean) item.getData(EdgeItem.DIRECTED);
-}
-```
+- `G2DTarget.getGraphics()` returns `Graphics2D` for on-screen preview.
+- `SVGTarget` creates DOM elements and exposes named top-level groups.
+- `PDFTarget.getContentStream()` returns PDFBox's `PDPageContentStream`.
 
-### Implement `getProperties`
+If a visual feature appears on screen but vanishes from exported SVG/PDF, the renderer is incomplete. Share geometry and color calculations across the three drawing methods; only target-specific drawing should differ. Test each target with transparency, scaling, negative coordinates, and an empty graph.
 
-You can add your own properties attached to the renderer. Typically each renderer has its own properties. For instance the node renderer has border size or color as properties. Once defined a property will be shawn to the user who can change its value.
+`getCanvasSize()` must include the entire mark, including halo, stroke, arrow, or label. An underestimated box can crop output. Return `new CanvasSize()` only when the size genuinely cannot be computed.
 
-Properties have a identifier, a display name, a description and a type. It's important to have a unique identifier to each property. Be sure to choose something not already taken.
+## Preprocess without singleton state
 
-Properties are displayed in categories. You can either set an existing category or define a new one. Existing categories are `PreviewProperty.CATEGORY_NODES`, `PreviewProperty.CATEGORY_EDGES`, `PreviewProperty.CATEGORY_NODE_LABELS`, `PreviewProperty.CATEGORY_EDGE_LABELS` and `PreviewProperty.CATEGORY_EDGE_ARROWS`.
-
-Here is how to create a property `"Border width"`:
+For a global minimum and maximum:
 
 ```java
-public PreviewProperty[] getProperties() {
-    return new PreviewProperty[]{
-                    PreviewProperty.createProperty(this, "border_width", Float.class,
-                    "Border width",
-                    "",
-                    PreviewProperty.CATEGORY_NODES).setValue(1f)};
-}
-```
-
-Properties should have a default value. It is set at the creation of the property simply by calling `setValue()`. 
-
-### Implement render
-
-The render method receives an item and draw it to a render target. There is three possible render targets:
-
--- [Processing](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/preview/api/G2DTarget.html)
--- [SVG](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/preview/api/SVGTarget.html)
--- [PDF](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/preview/api/PDFTarget.html)
-
-Renderers should implement the drawing routines for the three targets. One might ask why the same code has to be duplicated in three different ways. Unfortunately there is no unified drawing toolkit flexible and efficient enough to support this task at this point. The good news is that renderers have total control on what is drawn. It's verbose but flexible.
-
-When the target is Java2D, renderers obtain the `G2DTarget` object. For the SVG target, renderers obtain Batik's [Document](http://xmlgraphics.apache.org/batik/using/dom-api.html) instance. As the PDF target rely on the PDFBox library renderers obtain the [PDPageContentStream](https://pdfbox.apache.org/docs/2.0.8/javadocs/org/apache/pdfbox/pdmodel/PDPageContentStream.html) object.
-
-Example how to handle the three targets in render:
-
-```java
-public void render(Item item, RenderTarget target, PreviewProperties properties) {
-    if (target instanceof G2DTarget) {
-        renderG2D(item, (G2DTarget) target, properties);
-    } else if (target instanceof SVGTarget) {
-        renderSVG(item, (SVGTarget) target, properties);
-    } else if (target instanceof PDFTarget) {
-        renderPDF(item, (PDFTarget) target, properties);
+@Override
+public void preProcess(PreviewModel model) {
+    float min = Float.POSITIVE_INFINITY;
+    float max = Float.NEGATIVE_INFINITY;
+    for (Item edge : model.getItems(Item.EDGE)) {
+        float weight = edge.getData("weight");
+        min = Math.min(min, weight);
+        max = Math.max(max, weight);
     }
-}
- 
-public void renderG2D(Item item, G2DTarget target, PreviewProperties properties) {
-    Graphics2D graphics = target.getGraphics();
-    ...
-}
- 
-public void renderPDF(Item item, PDFTarget target, PreviewProperties properties) {
-    PDPageContentStream cb = target.getContentStream();
-    ...
-}
- 
-public void renderSVG(Item item, SVGTarget target, PreviewProperties properties) {
-    Element elem = target.createElement("circle");
-    ...
-    target.getTopElement("nodes").appendChild(elem);
+    model.getProperties().putValue("org.example.weight.min", min);
+    model.getProperties().putValue("org.example.weight.max", max);
 }
 ```
 
-Look at renderers examples in the [PreviewPlugin](https://github.com/gephi/gephi/tree/master/modules/PreviewPlugin) module.
+Read these properties in `render()`. Do not assign `min` and `max` to fields: two previews or workspaces could otherwise overwrite the singleton renderer's state.
 
-## Overwrite an existing renderer
+## Extend or replace a built-in renderer
 
-The default renderers can be overridden or extended.
-Extend or replace an existing renderer
+Extending `NodeRenderer`, `EdgeRenderer`, `NodeLabelRenderer`, `EdgeLabelRenderer`, or `ArrowRenderer` makes your renderer an alternative/replacement for that built-in type. This requires the `preview-plugin` dependency and couples the plugin more tightly to Gephi's implementation. Prefer a separate decorator renderer when it can draw the additional mark independently.
 
-To extend or completely replace a default Renderer by your own implementation, create a new Renderer and set the annotation like below. In addition, add `preview-plugin` module as a dependency.
+When replacement is necessary, register it with a deliberate position and test compatibility with the Renderers manager. Multiple plugins may extend the same built-in renderer.
 
-`@ServiceProvider(service=Renderer.class, position=XXX) public class MyRenderer extends NodeRenderer`
+## Custom properties
 
-Being XXX the new position of the renderer Then you can reuse parts of the base class or just override them.
+Basic property types are handled automatically. A custom value type needs a `PropertyEditor` that can parse/serialize values and optionally provide a custom editor. Register the editor and ensure malformed persisted settings fall back safely. For a simple range, two bounded numeric properties are often clearer than a custom type.
 
-Default renderers are:
+## Renderer checklist
 
-- `org.gephi.preview.plugin.renderers.NodeRenderer`
-- `org.gephi.preview.plugin.renderers.EdgeRenderer`
-- `org.gephi.preview.plugin.renderers.NodeLabelRenderer`
-- `org.gephi.preview.plugin.renderers.EdgeLabelRenderer`
-- `org.gephi.preview.plugin.renderers.ArrowRenderer`
+- The service has a stable position and display name.
+- Property IDs are namespaced, typed, documented, and have defaults.
+- `preProcess()` and `render()` keep state in items/properties, not fields.
+- G2D, SVG, and PDF output agree.
+- Canvas bounds include every painted pixel.
+- Expensive aggregation runs once, not per item.
+- Disabled renderers do not request unnecessary builders.
+- SVG/PDF escaping and graphics-state save/restore are tested.
 
-## Appendix
-
-### Custom properties
-
-Properties are usually default Java primitives like `Float` or `Color`. Custom property types can be used if a valid property editor is defined. Property editors define how a property value should be serialized and provide a custom UI to let the user modify the value. For instance to define a new property type `NumberRange` one could create a UI with two text fields to enter number ranges.
-
-Create the new type class and then create a new property editor:
-
-```java
-public class NumberRangePropertyEditor extends java.beans.PropertyEditorSupport {
-        @Override
-        public Component getCustomEditor() {
-                //TODO returns custom JPanel
-        }
- 
-        @Override
-        public String getAsText() {
-                //TODO returns the value as string
-        }
- 
-        @Override
-        public void setAsText(String text) {
-                //TODO set value from the text
-        }
- 
-        @Override
-        public boolean supportsCustomEditor() {
-                return true;
-        }
-}
-```
-
-One can find property editors examples in the [DesktopPreview](https://github.com/gephi/gephi/tree/master/modules/DesktopPreview) module.
-
-### Complex pre-process
-
-In each renderer the `preProcess()` method allows to access all preview data and execute complex algorithms.
-
-### How to read all items of a particular type
-
-Simply by querying the preview model:
-
-```java
-Item[] edgeItems = previewModel.getItems(Item.EDGE);
-```
-
-### How to use constants and data generated in pre-process
-
-Renderers should remain **stateless**. That means one shouldn't define any variable or fields in the renderer class itself. Instead all data can be put in the property system.
-
-Here is an example how to calculate the min and max edge weight in the `preProcess()` and use it in `render()`:
-
-```java
-public void preProcess(PreviewModel previewModel) {
-    PreviewProperties properties = previewModel.getProperties();
-    Item[] edgeItems = previewModel.getItems(Item.EDGE);
- 
-    for (Item edge : edgeItems) {
-        minWeight = Math.min(minWeight, (Float) edge.getData(EdgeItem.WEIGHT));
-        maxWeight = Math.max(maxWeight, (Float) edge.getData(EdgeItem.WEIGHT));
-    }
-    properties.putValue("weight.min", minWeight);
-    properties.putValue("weight.max", maxWeight);
-}
- 
-public void render(Item item, RenderTarget target, PreviewProperties properties) {
-    float minWeight = properties.getFloatValue("weight.min");
-    float maxWeight = properties.getFloatValue("weight.max");
-    ...
-}
-```
-
-For additional data generated per item, simply call `item.setData()`.
-
-### Default item data
-
-**Node**
-- x (float)
-- y (float)
-- size (float)
-- color (color)
-
-**Edge**
-- weight (float)
-- directed (boolean)
-- mutual (boolean)
-- self_loop (boolean)
-- meta_edge (boolean)
-- color (color)
-
-**Node Label**
-- label (string)
-- color (color)
-- size (float)
-- width (float)
-- height (float)
-- visible (boolean)
-
-**Edge Labels**
-- label (string)
-- color (color)
-- size (float)
-- width (float)
-- height (float)
-- visible (boolean)
-
-**Edges have additional data set by the default edge renderer:**
-- source (nodeitem)
-- target (nodeitem)
+Use Gephi 0.11.2's [Preview API](https://github.com/gephi/gephi/tree/v0.11.2/modules/PreviewAPI) and [built-in renderers](https://github.com/gephi/gephi/tree/v0.11.2/modules/PreviewPlugin/src/main/java/org/gephi/preview/plugin/renderers) as the exact reference.
