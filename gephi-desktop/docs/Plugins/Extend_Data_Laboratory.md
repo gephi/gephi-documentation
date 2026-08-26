@@ -1,375 +1,202 @@
 ---
 id: Extend_Data_Laboratory
 title: Extend Data Laboratory
-sidebar_position: 10
+sidebar_position: 11
 ---
 
-## Introduction
+Data Laboratory **manipulators** add actions for selected nodes or edges, a cell value, a column, or the table as a whole. Implement one when introducing a new action into the Data Laboratory UI. When a plugin only needs to invoke an operation Data Laboratory already provides, use its public controllers instead.
 
-Data Laboratory section of Gephi provides a good amount of basic and common features to manipulate the graph. But data laboratory can be extended with new features as plugins easily through Data Laboratory API/SPI. All Gephi's default data laboratory features are in **Data Laboratory Plugin**. **Simple and complex examples can be found in this module**.
+Add `datalab-api`, `graph-api`, and `org-openide-util-lookup`. Add UI modules only when the implementation imports them.
 
-For this tutorial, the **SPI** packages (`org.gephi.datalab.spi`) are the most interesting, while `org.gephi.datalab.api` only contains several controllers that expose general features to be used by plugins or other parts of gephi.
+## Use existing Data Laboratory operations
 
-Data Laboratory SPI may seem big, but all interfaces to implement are mostly the same with small changes necessary to define different types of features. **Once you know how to create some kind of feature, it is simple to create others**.
-
-**From now on, we will call data laboratory features 'manipulators' since they manipulate graph data/elements.**
-
-### Where each type of manipulator appears in Gephi desktop application
-
-![800px-data-lab-overview](/docs/Plugins/Extend_Data_Laboratory/00_800px-data-lab-overview.png)
-
-![merge-strategies](/docs/Plugins/Extend_Data_Laboratory/01_merge-strategies.png)
-
-### The Manipulator interface
-
-The [Manipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/Manipulator.html) interface is the part that most of the interfaces that you will implement share in common. Also, all kinds of manipulators can provide an optional GUI just by returning an implementation of the [ManipulatorUI](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/ManipulatorUI.html) interface.
-
-The interfaces that extend Manipulator to provide specific types of manipulators are:
-
-- [NodesManipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/nodes/NodesManipulator.html) - Defines a context menu action to manipulate one or more selected nodes.
-- [EdgesManipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/edges/EdgesManipulator.html) - Defines a context menu action to manipulate one or more selected edges.
-- [GeneralActionsManipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/general/GeneralActionsManipulator.html) - Defines a general action not related to any specific graph element. [PluginGeneralActionsManipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/general/PluginGeneralActionsManipulator.html) is the same but appears in a plugin button that displays a list of general actions (use this when the tool bar does not have enough space for more general actions).
-- [AttributeValueManipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/values/AttributeValueManipulator.html) - Defines a context menu action that manipulates a single cell data (pair of AttributeRow and AttributeColumn).
-- [AttributeColumnsMergeStrategy](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/columns/merge/AttributeColumnsMergeStrategy.html) - Defines an strategy
--- [AttributeRowsMergeStrategy](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/rows/merge/AttributeRowsMergeStrategy.html) - A very special type of manipulator that defines strategies for merging rows to be used by a nodes/edges manipulator or other parts (does not have a place in Data Laboratory GUI by itself but it is currently used by MergeNodes manipulator).
-
-Only [AttributeColumnsManipulator](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/columns/AttributeColumnsManipulator.html) is a bit different from `Manipulator` because its workflow is not the same as all the previous manipulators, and therefore provides its unique interface plus a [AttributeColumnsManipulatorUI](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/columns/AttributeColumnsManipulatorUI.html).
-
-## Create a new Manipulator
-
-Once we understand the interfaces that define our manipulators, we can create some sample features.
-
-### Setting up our data
-
-Here is where manipulators that need some **initial data** (like nodes, edges or columns) get it. This method **varies for each type of manipulator** but is always called before any other method.
-
-Code example for a nodes manipulator:
+The controllers expose built-in operations and their capability checks. Ask whether an operation is valid before executing it:
 
 ```java
-public void setup(Node[] nodes, Node clickedNode) {
-    this.nodes=nodes;//Keep the needed data for future operations.
+AttributeColumnsController columns = Lookup.getDefault()
+    .lookup(AttributeColumnsController.class);
+
+if (columns.canClearColumnData(column)) {
+    columns.clearColumnData(table, column);
+}
+
+if (columns.canChangeColumnData(column)) {
+    columns.fillColumnWithValue(table, column, "Unknown");
+}
+
+if (columns.canDeleteColumn(column)) {
+    columns.deleteAttributeColumn(table, column);
 }
 ```
 
-In this case, setup receives an array of nodes (selected nodes at right click) and the specific clicked node.
+`GraphElementsController` similarly exposes supported node and edge operations. Prefer these controllers to reimplementing built-in behavior: their capability checks preserve property-column restrictions and other Data Laboratory rules. Resolve the table, column, and controller for the current workspace when the operation begins. Use the manipulator SPIs below only when adding a new user-visible action.
 
-### Name and description
+## Choose a manipulator
 
-Simply define a name an a description (optional) of what our manipulator does.
+| Context | SPI | Registration |
+| --- | --- | --- |
+| General toolbar action | `GeneralActionsManipulator` | Register the manipulator directly |
+| Overflow **More actions** menu | `PluginGeneralActionsManipulator` | Register directly |
+| Selected node rows | `NodesManipulator` | Register `NodesManipulatorBuilder` |
+| Selected edge rows | `EdgesManipulator` | Register `EdgesManipulatorBuilder` |
+| One cell | `AttributeValueManipulator` | Register its builder |
+| One column | `AttributeColumnsManipulator` | Register directly |
+| Merge columns/rows | Merge-strategy SPI | Register the matching builder |
+
+Builders matter because Lookup services are singletons while node, edge, cell, and merge manipulators hold per-invocation context. The builder must return a new instance.
+
+## A general action
+
+This quick action is registered directly:
 
 ```java
-public String getName() {
-    return NbBundle.getMessage(Group.class, "Group.name");//Localized name for nodes grouping action
-}
- 
-public String getDescription() {
-    return null;//No description
-}
-```
-
-### Determining if our manipulator should be eligible to execute
-
-In determinate conditions we would not like our manipulator to be executed, so we declare it with a boolean. **The moment this is called, setup has already been called**.
-
-```java
-public boolean canExecute() {
-    return nodes.length == 1;//This manipulator will only be executed with a single node selection
-}
-```
-
-### Provide an UI
-
-Here we can return our GUI if desired. We will talk about ManipulatorUIs later.
-
-```java
-public ManipulatorUI getUI(){
-    return new MyUI();//It is not necessary to pass this class to the UI now because ManipulatorUI will be set up later.
-    //return null if no GUI
-}
-```
-
-### Ordering and classifying manipulators
-
-In order to declare the position in a group of manipulators that our manipulator has to appear, we have to provide a number identifying the category(type) and position.
-
-Order of appearance is determined first by the type number and then by position number. Often consecutive elements are given numbers with considerable separation to be able to insert new categories between them.
-
-```java
-public int getType() {
-    return 300;//Will appear in the same category as other manipulators that also return 300
-}
- 
-public int getPosition() {
-    return 0;//Will appear in its category before manipulators with a position of 1 or more
-}
-```
-
-**These are the only methods that could be called before setup and therefore should not depend on context data**.
-
-### Optional icon
-
-Just return an icon for the feature or null.
-
-```java
-public Icon getIcon() {
-    return ImageUtilities.loadImageIcon("org/gephi/datalab/plugin/manipulators/resources/group.png", true);
-}
-```
-
-### Executing the final action
-
-**This is where our feature does the work** once it has been chosen and preferences (if any) have been chosen with or without a GUI.
-
-```
-public void execute() {
-    for(Node node:nodes){
-        //Do something with the nodes
-    }
-}
-```
-
-### Complete code for Group nodes manipulator
-
-```java
-public class Group extends BasicNodesManipulator {
-    private Node[] nodes;
- 
-    public void setup(Node[] nodes, Node clickedNode) {
-        this.nodes=nodes;
-    }
- 
+@ServiceProvider(service = PluginGeneralActionsManipulator.class)
+public final class RemoveSelfLoops implements PluginGeneralActionsManipulator {
+    @Override
     public void execute() {
-        GraphElementsController gec = Lookup.getDefault().lookup(GraphElementsController.class);
-        gec.groupNodes(nodes);
+        GraphModel model = Lookup.getDefault()
+            .lookup(GraphController.class)
+            .getGraphModel();
+        if (model == null) {
+            return;
+        }
+
+        Graph graph = model.getGraph();
+        graph.writeLock();
+        try {
+            for (Edge edge : graph.getSelfLoops().toArray()) {
+                graph.removeEdge(edge);
+            }
+        } finally {
+            graph.writeUnlock();
+        }
     }
- 
-    public String getName() {
-        return NbBundle.getMessage(Group.class, "Group.name");
+
+    @Override public String getName() { return "Remove self-loops"; }
+    @Override public String getDescription() {
+        return "Removes every self-loop from the complete graph.";
     }
- 
-    public String getDescription() {
-        return "";
+    @Override public boolean canExecute() {
+        GraphModel model = Lookup.getDefault()
+            .lookup(GraphController.class).getGraphModel();
+        return model != null && model.getGraph().getEdgeCount() > 0;
     }
- 
-    public boolean canExecute() {
-        GraphElementsController gec = Lookup.getDefault().lookup(GraphElementsController.class);
-        return gec.canGroupNodes(nodes);
+    @Override public ManipulatorUI getUI() { return null; }
+    @Override public int getType() { return 100; }
+    @Override public int getPosition() { return 100; }
+    @Override public Icon getIcon() { return null; }
+}
+```
+
+The action states that it changes the complete graph. If this could be slow on the supported graph sizes, ask for confirmation/settings through a UI and run the mutation through the long-task pattern rather than blocking the EDT.
+
+## A selected-nodes action
+
+`setup` is called before context-dependent methods. Store only what the invocation needs:
+
+```java
+public final class SetNodesRed implements NodesManipulator {
+    private Node[] nodes;
+
+    @Override
+    public void setup(Node[] selectedNodes, Node clickedNode) {
+        nodes = selectedNodes.clone();
     }
- 
-    public ManipulatorUI getUI() {
-        return null;
+    @Override public void execute() {
+        for (Node node : nodes) {
+            node.setColor(Color.RED);
+        }
     }
- 
-    public int getType() {
-        return 300;
-    }
- 
-    public int getPosition() {
-        return 0;
-    }
- 
-    public Icon getIcon() {
-        return ImageUtilities.loadImageIcon("org/gephi/datalab/plugin/manipulators/resources/group.png", true);
+    @Override public boolean canExecute() { return nodes != null && nodes.length > 0; }
+    @Override public boolean isAvailable() { return true; }
+    @Override public ContextMenuItemManipulator[] getSubItems() { return null; }
+    @Override public Integer getMnemonicKey() { return null; }
+    @Override public String getName() { return "Set color to red"; }
+    @Override public String getDescription() { return "Colors the selected nodes red."; }
+    @Override public ManipulatorUI getUI() { return null; }
+    @Override public int getType() { return 100; }
+    @Override public int getPosition() { return 100; }
+    @Override public Icon getIcon() { return null; }
+}
+```
+
+Register a factory, not this stateful class:
+
+```java
+@ServiceProvider(service = NodesManipulatorBuilder.class)
+public final class SetNodesRedBuilder implements NodesManipulatorBuilder {
+    @Override public NodesManipulator getNodesManipulator() {
+        return new SetNodesRed();
     }
 }
 ```
 
-## Nodes and edges manipulators
+`getSubItems()` can create a submenu. If an item returns children, Gephi executes a child rather than the parent. Subitems receive the same selection context.
 
-Both of these types of manipulators are shown as context menu actions in a popup menu, and benefit from some special settings defined in the `ContextMenuItemManipulator` interface. Their principal extra feature is the possibility to have subitems, as can be observed in the next image.
+## Column actions
 
-![sub-items](/docs/Plugins/Extend_Data_Laboratory/02_sub-items.png)
-
-It defines 3 methods:
+`AttributeColumnsManipulator` has a different lifecycle: eligibility and execution both receive the table and column.
 
 ```java
-public ContextMenuItemManipulator[] getSubItems() {
-        return null;//Return subitems 
-}
-```
-
-Note that:
-
-- Most nodes/edges manipulators won't need to have subitems.
-- Subitems can also return more subitems.
-- Subitems will be set up with the proper data like their parents.
-- If a item/subitem returns subitems, it will never be executed, their subitems will.
-- `execute` method of the specific clicked subitem will be called.
-
-```java
-public boolean isAvailable() {
-    return true;//Indicates if a subitem has to appear in the menu at all (enabled or not)
-}    
- 
-public Integer getMnemonicKey() {
-    return null;//Shorcut associated key for this item
-}
-```
-
-Most manipulators won't need this, so a simple class like the following can be extended by all your manipulators to avoid repeating code:
-
-```java
-public abstract class BasicNodesManipulator implements NodesManipulator{
- 
-    public boolean isAvailable() {
-        return true;
-    }
- 
-    public ContextMenuItemManipulator[] getSubItems() {
-        return null;
-    }
- 
-    public Integer getMnemonicKey() {
-        return null;
-    }
-}
-```
-
-*Visualization API has an SPI for adding context menu actions (GraphContextMenuItem) to nodes like DataLaboratory does with NodesManipulator. Note that they share the interface ContextMenuItemManipulator from Data Laboratory API, so they are compatible, being possible to reuse actions on nodes for Overview and Data Laboratory.*
-
-## AttributeColumnsManipulators
-
-What makes different these manipulators is that, instead oh having data set up and then `canExecute` being called, eligibility is tested for every column and is later executed for the selected column (showing first the UI if necessary).
-
-Here is a complete example of a real feature (columns duplication):
-
-```java
-public class DuplicateColumn implements AttributeColumnsManipulator {
-    private String title;
-    private AttributeType columnType;
- 
-    public void execute(Table table, Column column) {
-        Lookup.getDefault().lookup(AttributeColumnsController.class).duplicateColumn(table, column, title, columnType);
-    }
- 
-    public String getName() {
-        return NbBundle.getMessage(DuplicateColumn.class, "DuplicateColumn.name");
-    }
- 
-    public String getDescription() {
-        return "";
-    }
- 
+@ServiceProvider(service = AttributeColumnsManipulator.class)
+public final class ClearStringColumn implements AttributeColumnsManipulator {
+    @Override
     public boolean canManipulateColumn(Table table, Column column) {
-        return true;
+        return String.class.equals(column.getTypeClass()) && !column.isProperty();
     }
- 
-    public AttributeColumnsManipulatorUI getUI(Table table,Column column) {
-        return new DuplicateColumnUI();
+
+    @Override
+    public void execute(Table table, Column column) {
+        Graph graph = table.getGraph();
+        if (table.isNodeTable()) {
+            for (Node node : graph.getNodes()) {
+                node.setAttribute(column, null);
+            }
+        } else {
+            for (Edge edge : graph.getEdges()) {
+                edge.setAttribute(column, null);
+            }
+        }
     }
- 
-    public int getType() {
-        return 0;
+
+    @Override public AttributeColumnsManipulatorUI getUI(Table table, Column column) {
+        return null;
     }
- 
-    public int getPosition() {
-        return 400;
-    }
- 
-    public Image getIcon() {
-        return ImageUtilities.loadImage("org/gephi/datalab/plugin/manipulators/resources/table-duplicate-column.png");
-    }
- 
-    public String getTitle() {
-        return title;
-    }
- 
-    public void setTitle(String title) {
-        this.title = title;
-    }
- 
-    public Class getColumnType() {
-        return columnType;
-    }
- 
-    public void setColumnType(Class columnType) {
-        this.columnType = columnType;
-    }
+    @Override public String getName() { return "Clear text values"; }
+    @Override public String getDescription() { return "Sets every value in this text column to null."; }
+    @Override public int getType() { return 100; }
+    @Override public int getPosition() { return 100; }
+    @Override public Image getIcon() { return null; }
 }
 ```
 
-Column type and title are set through `DuplicateColumnUI`.
+For destructive operations, provide a confirmation UI and describe the scope. Use `table.isNodeTable()`/`isEdgeTable()` rather than assuming which kind of row was supplied.
 
-## Builders (how to get our plugins to appear in data laboratory perspective)
+## Settings UI lifecycle
 
-Like in other parts of Gephi, api/spi implementations are exposed with Netbeans Lookup API.
+Most manipulators return a `ManipulatorUI`:
 
-This is done with the `@ServiceProvider` annotation. Since this annotation returns a singleton of the service, in order to help the programmer avoid problems with previously set up data, some of the manipulators require a builder that returns instances of the manipulator as the service.
+1. `setup(manipulator, dialogControls)` receives the operation and dialog controls.
+2. `getSettingsPanel()` returns the Swing panel.
+3. The user confirms or cancels.
+4. `unSetup()` transfers validated values and clears references.
 
-But other manipulators are directly exposed as the service with the annotation.
+`isModal()` controls whether the dialog blocks other interaction. Use `DialogControls` to disable OK while values are invalid. The action itself must validate again.
 
-For example, to declare a `GeneralActionsManipulator`, it is sufficient with:
+## Ordering and availability
 
-```java
-@ServiceProvider(service = GeneralActionsManipulator.class)
-public class AddEdgeToGraph implements GeneralActionsManipulator {
-...
-```
+`getType()` groups related actions; `getPosition()` orders them within that group. Leave numerical gaps so future actions can be inserted. `canExecute()` determines whether the current prepared action can run; `isAvailable()` determines whether a context-menu item appears at all.
 
-But for a `NodesManipulator` you need to create a builder and give it the annotation (not to the manipulator):
+Do not make `getName()`, ordering, or icons depend on selection context unless the interface lifecycle guarantees `setup()` was called first.
 
-```java
-@ServiceProvider(service=NodesManipulatorBuilder.class)
-public class SetNodesSizeBuilder implements NodesManipulatorBuilder {
-    public NodesManipulator getNodesManipulator() {
-        return new SetNodesSize();
-    }
-}
-```
+## Data Laboratory checklist
 
-Manipulator type | Needs a builder
------------------| ----------------
-AttributeColumnsManipulator | 
-GeneralActionsManipulator | 	
-AttributeColumnsMergeStrategy | ✓
-EdgesManipulator | ✓
-NodesManipulator | ✓
-AttributeRowsMergeStrategy | ✓
-AttributeValueManipulator | ✓
+- The action appears in the narrowest correct context.
+- Stateful manipulators are created by builders, not registered as singletons.
+- Selection arrays are copied if retained and not kept after execution.
+- Destructive scope is named and confirmed.
+- Graph/table changes use the appropriate locking and threading strategy.
+- `canExecute()` handles no project, empty selection, and incompatible columns.
+- UI references are released in `unSetup()`.
 
-## Providing a GUI
-
-When your feature needs a GUI you only need to return a [ManipulatorUI](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/datalab/spi/ManipulatorUI.html) implementation capable of configuring your feature extra data. Let's see what each method should do with an example:
-
-```java
-public class MyManipulatorUI extends JPanel implements ManipulatorUI {
-    private MyManipulator manipulator;
-    private DialogControls dialogControls;
- 
-    void setup(Manipulator m, DialogControls dialogControls){
-        //Receive our manipulator instance:
-        manipulator = (MyManipulator) m; //We know the type of manipulator we are going to receive so cast is safe
-        //And an object to control the dialog if necessary 
-        //(for now it only is able to enable/disable the Ok button of the dialog for validation purposes)
-        this.dialogControls = dialogControls;
-    }
- 
-    void unSetup(){
-        //Called when the dialog is closed, canceled or accepted. Pass necessary data to the manipulator:
-        manipulator.setSomeOption(someValue);
-        ...
-    }
- 
-    String getDisplayName(){
-        //Provide title for the dialog:
-        return manipulator.getName();//For example, the manipulator name
-    }
- 
-    public JPanel getSettingsPanel(){
-        //Provide the JPanel to create the UI dialog
-        //A good practice is to extend JPanel and just return this object
-        return this;
-    }
- 
-    /**
-     * Indicates if the created dialog has to be modal
-     */
-    public boolean isModal(){
-        return true;
-    }
-}
-```
-
-## Manipulators Summary
-
-![manipulators](/docs/Plugins/Extend_Data_Laboratory/03_manipulators.png)
+Use Gephi 0.11.2's [DataLaboratoryAPI](https://github.com/gephi/gephi/tree/v0.11.2/modules/DataLaboratoryAPI) for contracts and [DataLaboratoryPlugin](https://github.com/gephi/gephi/tree/v0.11.2/modules/DataLaboratoryPlugin) for current implementations.
