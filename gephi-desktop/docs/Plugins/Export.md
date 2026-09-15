@@ -1,193 +1,164 @@
 ---
 id: Export
 title: Export
-sidebar_position: 7
+sidebar_position: 8
 ---
 
-Exporters export data from Gephi to various targets, like files or streams.
+An exporter serializes workspace data to a `Writer` or `OutputStream`. It should not choose the destination path itself: Gephi owns the file dialog or stream and injects the output object.
 
-One can find file exporter examples in Gephi's `ExportPlugin` and `PreviewExport` [modules](https://github.com/gephi/gephi/tree/master/modules).
+This tutorial sketches a `.pairs` graph exporter. Add `io-exporter-api`, `graph-api`, `project-api`, `utils-longtask`, and `org-openide-util-lookup`.
 
-## Create a new Exporter
+## Export through an installed exporter
 
-### Set Dependencies
-
-Add `export-api`, `project-api`, and `org-openide-util-lookup` modules as dependencies for your plugin module *MyExport*.
-
-### Create Exporter Builder
-
-`ExporterBuilder` is a factory class for building the important instance, all Exporters should have their own builder.
-Create a new builder *MyExporterBuilder* class, which implements one of the following interface:
-
-* [`GraphFileExporterBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/GraphFileExporterBuilder.html) - For graph export (like GEXF, GraphML, CSV...)
-* [`VectorFileExporterBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/VectorFileExporterBuilder.html) - Vector graphics (like SVG, PDF, ...)
-* [`ExportBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/ExporterBuilder.html) - Anything else
-
-Let's say we create a exporter for a custom graph format with *.foo* extension, so we choose `GraphFileExporterBuilder`.
-
-Fill the `getFileTypes()` and `getName()` methods like below, for a single file format supported named *foo*.
+Use `ExportController` when your plugin needs a format already provided by Gephi or another installed module:
 
 ```java
-public String getName() {
-   return "foo";
+ExportController exports = Lookup.getDefault().lookup(ExportController.class);
+Exporter exporter = exports.getExporter("gexf");
+if (exporter == null) {
+    throw new IllegalStateException("The requested exporter is not installed");
 }
- 
-public FileType[] getFileTypes() {
-   return new FileType[]{new FileType(".foo", "Foo files")};
+
+if (exporter instanceof GraphExporter graphExporter) {
+    graphExporter.setWorkspace(workspace);
+    graphExporter.setExportVisible(true);
 }
+
+exports.exportFile(destinationFile, exporter);
 ```
 
-Add `@ServiceProvider` annotation to your builder class to declare you are implementing an `Exporter` service. Add the following line before *MyExporterBuilder* class definition, as shown below:
+Choose `exportVisible` deliberately: `true` exports the filtered view and `false` the complete graph. Connect cancellation if the exporter implements `LongTask`. For plugin-controlled destinations, export to a temporary file in the destination directory and move it into place only after success when partial files would be misleading. Implement an exporter below only when adding a new output format.
+
+## Register a builder
+
+Choose the narrowest builder and exporter interfaces:
+
+- `GraphFileExporterBuilder` with `GraphExporter` for graph data.
+- `VectorFileExporterBuilder` with `VectorExporter` for preview vector output.
+- `ExporterBuilder`/`Exporter` for a non-file-specific target.
+- `CharacterExporter` for text; `ByteExporter` for binary.
 
 ```java
 @ServiceProvider(service = GraphFileExporterBuilder.class)
-public class MyExporterBuilder implements GraphFileExporterBuilder{
-...
+public final class PairsExporterBuilder implements GraphFileExporterBuilder {
+    @Override public String getName() { return "pairs"; }
+    @Override public FileType[] getFileTypes() {
+        return new FileType[] {
+            new FileType(".pairs", "Pairs edge-list files")
+        };
+    }
+    @Override public GraphExporter buildExporter() {
+        return new PairsExporter();
+    }
+}
 ```
 
-This annotation registers your implementation in the system, in order it can be discovered at runtime.
-
-Put `GraphFileExporterBuilder.class` as the annotation service parameter for graph files, `VectorFileExporterBuilder.class` for vector graphics and `ExportBuilder.class` for the rest.
-
-### Create Exporter
-
-Create a new exporter class, which implements `GraphExporter`, `VectorExporter` or simply `Exporter`, depending on what you set for the builder.
-
-The exporter is where the job is done, in its `execute()` method. The main input object the export needs is the Workspace. In Gephi, data are stored within workspaces. It is the place the exporter will find what to export. Before being executed by the export controller, the exporter will receive the workspace and other parameters through setters methods.
-
-Implement also [`ByteExporter`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/ByteExporter.html) interface for byte streams or [`CharacterExporter`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/exporter/spi/CharacterExporter.html) for texts. These are the two ways you can output data in a exporter, either text (`java.io.Writer`) or byte (`java.io.OutputStream`). Note that XML is text-based. So exporters are not specifically exporting to a file or a stream, they export to a Writer or an `OutputStream`. The controller later decides what to do with it.
-
-Add also `LongTask` interface to your class, in order you will be able to use progress and cancel management. Add `utils-longtask` as a dependency to profit from LongTask.
-
-Your exporter should now look like below:
+## Implement text export
 
 ```java
-public class MyExporter implements GraphExporter, CharacterExporter {
- 
-    private boolean exportVisible = false;
+public final class PairsExporter
+        implements GraphExporter, CharacterExporter, LongTask {
     private Workspace workspace;
     private Writer writer;
- 
+    private boolean exportVisible;
+    private volatile boolean cancelled;
+    private ProgressTicket progressTicket;
+
+    @Override public void setWorkspace(Workspace value) { workspace = value; }
+    @Override public Workspace getWorkspace() { return workspace; }
+    @Override public void setWriter(Writer value) { writer = value; }
+    @Override public void setExportVisible(boolean value) { exportVisible = value; }
+    @Override public boolean isExportVisible() { return exportVisible; }
+
     @Override
     public boolean execute() {
-        //Do the job
+        GraphModel model = workspace.getLookup().lookup(GraphModel.class);
+        Graph graph = exportVisible ? model.getGraphVisible() : model.getGraph();
+        Progress.start(progressTicket, graph.getEdgeCount());
+
+        graph.readLock();
+        try {
+            for (Edge edge : graph.getEdges()) {
+                if (cancelled) {
+                    return false;
+                }
+                writer.write(csv(edge.getSource().getId().toString()));
+                writer.write(',');
+                writer.write(csv(edge.getTarget().getId().toString()));
+                writer.write(System.lineSeparator());
+                Progress.progress(progressTicket);
+            }
+            writer.flush();
+            return true;
+        } catch (IOException ex) {
+            throw new UncheckedIOException("Could not export pairs", ex);
+        } finally {
+            graph.readUnlock();
+            Progress.finish(progressTicket);
+        }
     }
- 
-    @Override
-    public void setWorkspace(Workspace workspace) {
-        this.workspace = workspace;
+
+    private String csv(String value) {
+        return '"' + value.replace("\"", "\"\"") + '"';
     }
- 
-    @Override
-    public Workspace getWorkspace() {
-        return workspace;
-    }
- 
-    @Override
-    public void setWriter(Writer writer) {
-        this.writer = writer;
-    }
- 
-     @Override
-    public void setExportVisible(boolean exportVisible) {
-        this.exportVisible = exportVisible;
-    }
- 
-    @Override
-    public boolean isExportVisible() {
-        return exportVisible;
+
+    @Override public boolean cancel() { cancelled = true; return true; }
+    @Override public void setProgressTicket(ProgressTicket ticket) {
+        progressTicket = ticket;
     }
 }
 ```
 
-The `GraphExporter` interface has an additional parameter: `exportVisible`. It indicates if either the complete or only the visible graph should be exported. At any time the system keeps the complete graph in memory. When users use filtering, the visible graph is different, as some nodes/edges have been removed. Below is the way to retrieve the good graph with this parameter.
+The example quotes every field so commas, quotes, and line breaks in IDs cannot corrupt the format. A real exporter should define its encoding, line endings, direction, multigraph, dynamic data, and null-value policies in a format specification.
 
-```java
-public boolean execute() {
-   GraphModel graphModel = workspace.getLookup().lookup(GraphModel.class);
-   Graph graph = null;
-   if (exportVisible) {
-      graph = graphModel.getGraphVisible();
-   } else {
-      graph = graphModel.getGraph();
-   }
-   //Do the job
-}
-```
+`exportVisible` is significant: `true` means the filtered/visible view, while `false` means the complete graph. Never ignore it. If the format cannot represent a feature, warn through the appropriate UI or documentation rather than silently changing semantics.
 
-### Finish the builder
+## Keep graph locks short
 
-In the builder, return a new instance of your exporter in the `buildExporter()` method.
+Holding a read lock while writing a slow disk or network stream can block graph changes for a long time. For moderate exports this provides a consistent snapshot. For very large or slow exports, copy the necessary primitive values in bounded batches under a lock and serialize after unlocking. Document whether concurrent edits can appear in the result.
 
-```java
-@Override
-public GraphExporter buildExporter() {
-   return new MyExporter();
-}
-```
+## Add optional settings
 
-## With settings UI
-
-You can create an `ExporterUI` class for your exporter. It is not mandatory and the exporter will work normally with default settings.
-
-### Create MyExporterUI
-
-Create a new exporter UI class, for instance *MyExporterUI* that implements `ExporterUI`.
-
-Your UI class is responsible for providing the JPanel associated to your exporter and set settings value to your *MyExporter* instance. The system will ask for a JPanel, show a setting dialog and then call `unsetup()`. If users validate the settings panel by hitting OK, the `unsetup()` method is called with update set as true and ask the UI to write the setting values.
-The sample below will help you:
-
-```java
-public class MyExporterUI implements ExporterUI {
- 
-   private JPanel panel;
-   private MyExporter exporter;
- 
-   public void setup(Exporter exporter) {
-     this.exporter= (MyExporter)exporter;
-   }
- 
-   public JPanel getPanel() {
-     panel = new JPanel();
-     return panel;
-   }
- 
-   public void unsetup(boolean update) {
-     if(update) {
-        //The user clicked OK when closing settings
-     } else {
-        //Cancel was hit
-     }
-     panel = null;
-     exporter = null;
-   }
- 
-   public String getDisplayName() {
-     return "Exporter Foo";
-   }
- 
-   public boolean isUIForExporter(Exporter exporter) {
-     return exporter instanceof MyExporter;
-   }
-}
-```
-
-### Register the UI
-
-Add `@ServiceProvider` annotation to your UI class. Add the following line before *MyexporterUI* class definition, as shown below:
+Register an `ExporterUI` service when users need format choices:
 
 ```java
 @ServiceProvider(service = ExporterUI.class)
-public class MyExporterUI implements ExporterUI{
-...
+public final class PairsExporterUI implements ExporterUI {
+    private PairsExporter exporter;
+    private JCheckBox includeHeader;
+
+    @Override public void setup(Exporter value) {
+        exporter = (PairsExporter) value;
+    }
+    @Override public JPanel getPanel() {
+        includeHeader = new JCheckBox("Include header", exporter.isIncludeHeader());
+        JPanel panel = new JPanel();
+        panel.add(includeHeader);
+        return panel;
+    }
+    @Override public void unsetup(boolean update) {
+        if (update) {
+            exporter.setIncludeHeader(includeHeader.isSelected());
+        }
+        exporter = null;
+        includeHeader = null;
+    }
+    @Override public boolean isUIForExporter(Exporter value) {
+        return value instanceof PairsExporter;
+    }
+    @Override public String getDisplayName() { return "Pairs options"; }
+}
 ```
 
-Note that by doing this your class becomes a singleton.
+Each export creates a new exporter. If the UI should remember the user's last choice, store the preference in the UI/service layer and load it into the new exporter during `setup()`.
 
-### Remember settings
+## Exporter checklist
 
-How to remember last settings set to the exporter, as each time a new export is made, a new instance of Exporter is created.
+- The correct complete or visible graph is selected.
+- Output is escaped according to a documented format, not by ad hoc concatenation.
+- Writer/stream ownership is respected; flush it, but let the caller manage its lifecycle unless the SPI contract says otherwise.
+- Cancellation returns `false` and leaves no misleading “successful” result.
+- Locks and progress are finished in `finally`.
+- Tests include Unicode, delimiters inside values, nulls, self-loops, parallel edges, and cancellation.
 
-It is the `ExporterUI`'s role to remember settings. The only thing to do is load settings at `setup()` and save settings at unsetup. Look at existing classes in the `ExporterPluginUI` module to have an example.
-
-![image](/docs/Plugins/Export/00_image.png)
+Production examples live in Gephi 0.11.2's [ExportPlugin](https://github.com/gephi/gephi/tree/v0.11.2/modules/ExportPlugin) and [PreviewExport](https://github.com/gephi/gephi/tree/v0.11.2/modules/PreviewExport) modules.

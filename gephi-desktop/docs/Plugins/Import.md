@@ -1,198 +1,199 @@
 ---
 id: Import
 title: Import
-sidebar_position: 5
+sidebar_position: 7
 ---
 
-Importers push data from files, databases or external datasources to a `Container`. The role of the container is to host all data collected by importers (i.e. nodes, edges and attributes). This documentation is focused on file importers, but the procedure is similar for databases.
+An importer parses an external source into a neutral `ContainerLoader`. Gephi validates that container, shows an import report, and only then processes it into a workspace. Importers should not write directly to the current `GraphModel`.
 
-Create a new plugin module, that we will call *MyImporter*.
+This tutorial builds a text importer for `.pairs` files containing one `source,target` edge per line. Add `io-importer-api`, `utils-longtask`, `org-openide-filesystems`, and `org-openide-util-lookup`.
 
-One can find file importer examples in the Gephi [source code](https://github.com/gephi/gephi/tree/master/modules/ImportPlugin/src/main).
+## Import through an installed importer
 
-## Create a new Importer
-
-### Set Dependencies
-
-Add `io-importer-api`, `utils-longtask`, `org-openide-filesystems` and `org-openide-util-lookup` modules as dependencies for your plugin module *MyImport*.
-
-### Create FileImporterBuilder
-
-* `ImporterBuilder` is a factory class for building the important instance, all Importers should have their own builder.
-* Create a new builder class, for instance *MyImporterBuilder* that implements `FileImporterBuilder`.
-* Fill the `getFileTypes()` and `getName()` methods like below, for a single file format supported named *foo*.
+Use `ImportController` when your plugin needs to import a format Gephi already supports:
 
 ```java
-public String getName() {
-   return "foo";
+ImportController imports = Lookup.getDefault().lookup(ImportController.class);
+Container container = imports.importFile(file);
+if (container == null) {
+    throw new IllegalArgumentException("No installed importer accepted the file");
 }
- 
-public FileType[] getFileTypes() {
-   return new FileType[]{new FileType(".foo", "Foo files")};
-}
+
+Processor processor = chooseProcessor(
+    Lookup.getDefault().lookupAll(Processor.class));
+
+Workspace result = imports.process(container, processor, workspace);
 ```
 
-Add `@ServiceProvider` annotation to your builder class. Add the following line before *MyImporterBuilder* class definition, as shown below:
+Ensure that the intended project and workspace exist before processing. Importing creates a neutral container; processing is the distinct step that commits it to a workspace. Select the processor through an explicit policy—ordinary imports normally use Gephi's installed standard processor—rather than relying on collection order or a localized display name. Run file parsing and processing off the EDT, connect cancellation when the selected implementation supports `LongTask`, and present the import report when warnings matter. Implement an importer below only for a format that installed importers do not handle.
+
+## Register the file format
 
 ```java
 @ServiceProvider(service = FileImporterBuilder.class)
-public class MyImporterBuilder implements FileImporterBuilder {
-...
+public final class PairsImporterBuilder implements FileImporterBuilder {
+    @Override public String getName() { return "Pairs edge list"; }
+
+    @Override
+    public FileType[] getFileTypes() {
+        return new FileType[] {
+            new FileType(".pairs", "Pairs edge-list files")
+        };
+    }
+
+    @Override
+    public boolean isMatchingImporter(FileObject fileObject) {
+        return "pairs".equalsIgnoreCase(fileObject.getExt());
+    }
+
+    @Override
+    public FileImporter buildImporter() {
+        return new PairsImporter();
+    }
+}
 ```
 
-### Create FileImporter
+The builder is a singleton service; the importer it returns carries one operation's state and must be new each time. Match both the advertised extension and the actual file criteria. For ambiguous formats, inspect a small prefix safely rather than claiming every text file.
 
-The importer is where the job will be done. Create a new importer class, for instance *MyImporter* that implements `FileImporter`.
+## Parse into drafts
 
-Notice the `setReader()` method. That means you will work with a reader instead directly with files. The system is responsible for setting the reader before the importer you're developing will be executed.
-
-Add also `LongTask` interface to your class, in order you will be able to use progress and cancel management.
-Your *MyImporter* would look like this:
+Gephi supplies the `Reader`, container, and progress ticket:
 
 ```java
-public class MyImporter implements FileImporter, LongTask {
- 
-   private Reader reader;
-   private ContainerLoader container;
-   private Report report;
-   private ProgressTicket progressTicket;
-   private boolean cancel = false;
- 
-   public void setReader(Reader reader) {
-      this.reader = reader;
-   }
- 
-   public boolean execute(ContainerLoader loader) {
-      this.container = loader;
-      this.report = new Report();
-      //Import
-      return !cancel;
-   }
- 
-   public ContainerLoader getContainer() {
-      return container;
-   }
- 
-   public Report getReport() {
-      return report;
-   }
- 
-   public boolean cancel() {
-      cancel = true;
-      return true;
-   }
- 
-   public void setProgressTicket(ProgressTicket progressTicket) {
-      this.progressTicket = progressTicket;
-   }
+public final class PairsImporter implements FileImporter, LongTask {
+    private Reader reader;
+    private Report report;
+    private ProgressTicket progressTicket;
+    private volatile boolean cancelled;
+
+    @Override public void setReader(Reader reader) { this.reader = reader; }
+    @Override public Report getReport() { return report; }
+
+    @Override
+    public boolean execute(ContainerLoader container) {
+        report = new Report();
+        Progress.start(progressTicket);
+
+        try (BufferedReader lines = new BufferedReader(reader)) {
+            String line;
+            int lineNumber = 0;
+            while (!cancelled && (line = lines.readLine()) != null) {
+                lineNumber++;
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+
+                String[] fields = line.split(",", -1);
+                if (fields.length != 2
+                        || fields[0].isBlank() || fields[1].isBlank()) {
+                    report.logIssue(new Issue(
+                        "Line " + lineNumber + ": expected source,target",
+                        Issue.Level.WARNING));
+                    continue;
+                }
+
+                NodeDraft source = node(container, fields[0].trim());
+                NodeDraft target = node(container, fields[1].trim());
+                EdgeDraft edge = container.factory().newEdgeDraft();
+                edge.setSource(source);
+                edge.setTarget(target);
+                container.addEdge(edge);
+            }
+            return !cancelled;
+        } catch (IOException ex) {
+            report.logIssue(new Issue(
+                "Could not read the file: " + ex.getMessage(),
+                Issue.Level.SEVERE));
+            return false;
+        } finally {
+            Progress.finish(progressTicket);
+        }
+    }
+
+    private NodeDraft node(ContainerLoader container, String id) {
+        NodeDraft node = container.getNode(id);
+        if (node == null) {
+            node = container.factory().newNodeDraft(id);
+            node.setLabel(id);
+            container.addNode(node);
+        }
+        return node;
+    }
+
+    @Override public boolean cancel() { cancelled = true; return true; }
+    @Override public void setProgressTicket(ProgressTicket ticket) {
+        progressTicket = ticket;
+    }
 }
 ```
 
-The infrastructure is set, the container for pushing data, the report for pushing logs and errors, and the progress management.
+This example warns and skips malformed records. For a format invariant that makes the whole file unusable, log a severe or critical issue and return `false`. Never use one vague “invalid file” message when a line number, field, and expected value can guide the user.
 
-### Finish the builder
+### Text, XML, and binary input
 
-Go back to the *MyImporterBuilder* and complete `buildImporter()` and `isMatchingImporter()` methods:
+- Wrap text readers in `BufferedReader` or use `ImportUtils.getTextReader(reader)` when line numbers are useful.
+- Prefer a streaming XML parser for large XML documents; `ImportUtils.getXMLReader(reader)` provides StAX support.
+- Avoid DOM for unbounded files because it materializes the whole document.
+- Implement the appropriate byte/file-aware SPI for genuinely binary formats rather than converting arbitrary bytes through a character reader.
 
-```java
-public FileImporter buildImporter() {
-   return new MyImporter();
-}
- 
-public boolean isMatchingImporter(FileObject fileObject) {
-   return fileObject.getExt().equalsIgnoreCase("foo");
-}
-```
+Treat all imported content as untrusted: bound sizes where the format allows it, validate numeric ranges, avoid entity expansion in XML, and never execute paths or commands found in data.
 
-## With settings UI
+## When a custom processor is appropriate
 
-You can create an `ImporterUI` class for your importer. It is not mandatory and the importer will work normally with default settings.
+The importer creates and validates drafts; a `Processor` decides how one or more `ContainerUnloader`s become workspace data. The standard processor already handles ordinary “append to current/new workspace” behavior. Write a custom processor only for a distinct merge or workspace-creation policy. It must implement `setContainers`, optional `setWorkspace`, `process`, progress, display name, and report; a matching `ProcessorUI` exposes it in the import workflow. Keep format parsing in the importer so the same container can still be processed in different ways.
 
-### Create MyImporterUI
+## Add settings UI only when needed
 
-Create a new `ImporterUI` class, for instance *MyImporterUI* that implements [`ImporterUI`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/io/importer/spi/ImporterUI.html).
-
-Your UI class is responsible for providing the JPanel associated to your importer and set settings value to your *MyImporter* instance. The system will ask for a JPanel, show a setting dialog and then call `unsetup()`. If users validate the settings panel by hitting OK, the `unsetup()` method is called with update set as true and ask the UI to write the setting values.
-The sample below will help you:
-
-```java
-public class MyImporterUI implements ImporterUI {
- 
-   private JPanel panel;
-   private JCheckBox option;
-   private MyImporter importer;
- 
-   public void setup(Importer importer) {
-     this.importer = (MyImporter)importer;
-   }
- 
-   public JPanel getPanel() {
-     panel = new JPanel();
-     option = new JCheckBox("Option");
-     panel.add(option);
-     return panel;
-   }
- 
-   public void unsetup(boolean update) {
-     if(update) {
-        importer.setOption(option.isSelected());
-     }
-     panel = null;
-     importer = null;
-     option = null;
-   }
- 
-   public String getDisplayName() {
-     return "Importer Foo";
-   }
- 
-   public boolean isUIForImporter(Importer importer) {
-     return importer instanceof MyImporter;
-   }
-}
-```
-
-In the example below, notice the `importer.setOption(option.isSelected())` line. The `setOption()` method doesn't exist in *MyImporter* but it shows how to configure it easily.
-
-### Register the UI
-
-Add `@ServiceProvider` annotation to your UI class. Add the following line before *MyImporterUI* class definition, as shown below:
+Register `ImporterUI` as a separate service. In Gephi 0.11.2, `setup` receives an **array** because one dialog can configure several importers:
 
 ```java
 @ServiceProvider(service = ImporterUI.class)
-public class MyImporterUIimplements ImporterUI{
-...
+public final class PairsImporterUI implements ImporterUI {
+    private PairsImporter[] importers;
+    private JCheckBox directed;
+
+    @Override
+    public void setup(Importer[] values) {
+        importers = Arrays.stream(values)
+            .map(PairsImporter.class::cast)
+            .toArray(PairsImporter[]::new);
+    }
+
+    @Override
+    public JPanel getPanel() {
+        directed = new JCheckBox("Create directed edges", true);
+        JPanel panel = new JPanel();
+        panel.add(directed);
+        return panel;
+    }
+
+    @Override
+    public void unsetup(boolean update) {
+        if (update) {
+            for (PairsImporter importer : importers) {
+                importer.setDirected(directed.isSelected());
+            }
+        }
+        importers = null;
+        directed = null;
+    }
+
+    @Override public String getDisplayName() { return "Pairs options"; }
+    @Override public boolean isUIForImporter(Importer value) {
+        return value instanceof PairsImporter;
+    }
+}
 ```
 
-## Advices
+The example parser must then apply `directed` to each edge using the direction method defined by `EdgeDraft`. Copy settings back only when `update` is true. Validate them again in the importer.
 
-### How to write a text file importer
+## Importer checklist
 
-The best way for text files is to use a `LineNumberReader`.
-One can get it from the `ImportUtils` class:
+- Duplicate node IDs, missing endpoints, parallel edges, self-loops, encoding, and direction have explicit policies.
+- Attribute columns are declared with correct types before values are assigned.
+- Warnings identify the record; fatal problems return `false`.
+- Parsing is streaming and cancellation is checked frequently.
+- The supplied reader is not replaced with a hard-coded file path.
+- Tests cover empty, malformed, Unicode, large, and cancelled input.
 
-``LineNumberReader lineReader = ImportUtils.getTextReader(reader);``
-
-### How to write an XML file importer
-
-XML files can be read with different methods (DOM, SAX, StAX) in Java.
-[StAX](http://www.wikiwand.com/en/StAX) is combining simplicity and efficiency and should be favored to read XML files:
-
-``XMLStreamReader xmLReader = ImportUtils.getXMLReader(reader);``
-
-Thought it is not recommended to use DOM as it's too much memory consuming, here is how to get a Document from the reader:
-
-``Document document = ImportUtils.getXMLDocument(reader);``
-
-### How to handle errors and exceptions
-
-Warnings and errors are generated by importers to let users get feedback about the import process. Data is rarely clean and perfectly formated, thus it's necessary to give a specific error message for each problem. The report present in your importer class is here for that.
-
-Similar as classical logging framework, that is how to log a information message:
-
-``report.logIssue(new Issue("The attribute label has been found", Issue.Level.INFO));``
-
-There are four levels: **INFO**, **WARNING**, **SEVERE**, **CRITICAL**. Note that the critical level will stop the import process and throw an exception, so it is reserved if the file cannot be read or the XML is not valid for instance.
-About exceptions, it is recommended that you throw `RuntimeException` from your execute method. They will be properly catched and displayed to users in a message box.
-
-![image](/docs/Plugins/Import/00_image.png)
+See the [Gephi 0.11.2 ImportPlugin](https://github.com/gephi/gephi/tree/v0.11.2/modules/ImportPlugin) for production parsers and the bootcamp's matrix importer for the overall builder/importer/UI shape only.

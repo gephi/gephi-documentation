@@ -1,204 +1,164 @@
 ---
 id: Statistics
 title: Statistics
-sidebar_position: 4
+sidebar_position: 6
 ---
 
-## Create a new Metric
+A statistics plugin computes a network result, may write node or edge columns, and returns an HTML report. The desktop Statistics panel discovers a `StatisticsBuilder` and, optionally, a matching `StatisticsUI`.
 
-This HowTo shows how to create a new statistic/metric algorithm in Gephi.
+Add `statistics-api`, `graph-api`, `utils-longtask`, and `org-openide-util-lookup`.
 
-Create a new plugin module, that we will call *MyMetric*.
+## Run an installed statistic
 
-### Set Dependencies
+Discover a `StatisticsBuilder` when your plugin needs an analysis already installed in Gephi:
 
-Add `statistics-api`, `graph-api` modules as dependencies for your plugin module *MyMetric*. See [[How To Set Module Dependencies]]. Also add `utils-longtask` and `org-openide-util-lookup`, which will be used.
+```java
+StatisticsBuilder builder = Lookup.getDefault()
+    .lookupAll(StatisticsBuilder.class)
+    .stream()
+    .filter(candidate -> candidate.getName().equals(requestedName))
+    .findFirst()
+    .orElseThrow();
 
-### Create StatisticsBuilder
+Statistics statistic = builder.getStatistics();
+applyValidatedParameters(statistic, requestedParameters);
+statistic.execute(graphModel);
+String report = statistic.getReport();
+```
 
-* Statistics Builder provides information about the metric algorithm and is responsible for creating your Statistics algorithm instances. All metric algorithms should have their own builder.
-* Create a new builder class, for instance `MyMetricBuilder` that implements [`StatisticsBuilder`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/statistics/spi/StatisticsBuilder.html).
-* Fill `getName()` method by returning a display name like *My Metric*. Leaves other methods untouched for the moment.
-* Add `@ServiceProvider` annotation to your builder class. Add the following line before *MyMetricBuilder* class definition, as shown below:
+Execute expensive statistics on a background task. If the returned object implements `LongTask`, supply a progress ticket and connect cancellation before calling `execute`. Treat builder names as presentation text and prefer a stable identifier or an explicit supported-builder mapping when automating selection. Implement the contracts below only when contributing a new statistic.
+
+## Separate the three responsibilities
+
+- `StatisticsBuilder` creates fresh algorithm instances and identifies their class.
+- `Statistics` contains calculation state and produces the report.
+- `StatisticsUI` integrates settings and a short result value into the desktop panel.
+
+Register builders and UIs, not the algorithm itself:
 
 ```java
 @ServiceProvider(service = StatisticsBuilder.class)
-public class MyMetricBuilder implements StatisticsBuilder {
-...
-```
-
-### Create Statistics
-
-Create a new class that implements [`Statistics`](https://javadoc.io/doc/org.gephi/gephi/latest/org/gephi/statistics/spi/Statistics.html) and name it *MyMetric*. This is the place the algorithm belongs.
-Locate the `execute()` method, you will add your code here. The `getReport()` method should return plain text or HTML text that describe the algorithm execution. Create a new field
-
-`` private String report = "";``
-
-and return report in `getReport()`. That done, go back to `StatisticsBuilder` and fill remaining methods like above:
-
-```java
-public Statistics getStatistics() {
-    return new MyMetric();
-}
-
-public Class<? extends Statistics> getStatisticsClass() {
-    return MyMetric.class;
-}
-```
-
-Details about how to use `GraphModel` in the next section.
-
-### Set LongTask
-
-To let your algorithm task be cancelled and its progress watched, implement `LongTask` interface on *MyMetric*.
-Add two fields:
-
-```java
-private boolean cancel = false;
-private ProgressTicket progressTicket;
-```
-
-and implement new methods:
-
-```java
-public boolean cancel() {
-    cancel = true;
-    return true;
-}
-
-public void setProgressTicket(ProgressTicket progressTicket) {
-    this.progressTicket = progressTicket;
-}
-```
-
-Use the cancel field to terminate your algorithm execution properly and return from `execute()`.
-### Create StatisticsUI
-
-Create a new class that implements `StatisticsUI` and name it *MyMetricUI*. The user interfaces is defined here and allows to be automatically added to the `Statistics` module in Gephi.
-Add `@ServiceProvider` annotation to your UI class. Add the following line before *MyMetricUI* class definition, as shown below:
-
-```java
-@ServiceProvider(service = StatisticsUI.class)
-public class MyMetricUI implements StatisticsUI{
-...
-```
-
-First implement description method:
-
-```java
-public String getDisplayName() {
-    return "My Metric";
-}
-
-public String getCategory() {
-    return StatisticsUI.CATEGORY_NETWORK_OVERVIEW;
-}
-
-public int getPosition() {
-    return 800;
-}
- 
- public Class<? extends Statistics> getStatisticsClass() {
-   return MyMetric.class;
- }
-```
-
-The category is just where you want your metric to be displayed: **NODE**, **EDGE** or **NETWORK**. The position control the order the metric front-end are displayed. Returns a value between 1 and 1000, that indicates the position. Less means upper.
-
-Now create a new JPanel for your metric settings panel. Name it *MyMetricPanel*. Add setters and getters for all properties users can edit. Let's say the panel gives the choice on the graph type and has `isDirected()` and `setDirected()` methods.
-
-Now the `setup()` and `unsetup()` are filled. It follow the injection pattern, an instance of *MyMetric* is pushed to let the UI control it.
-
-First add fields to store the current metric:
-
-```java
-private MyMetricPanel panel;
-private MyMetric myMetric;
-```
-
-and fill `getSettingsPanel()`, `setup()` and `unsetup()`:
-
-```java
-public JPanel getSettingsPanel() {
-    panel = new MyMetricPanel();
-    return panel;
-}
-
-public void setup(Statistics statistics) {
-    this.myMetric = (MyMetric) statistics;
-    if(panel!=null) {
-        panel.setDirected(myMetric.isDirected());
+public final class SelfLoopBuilder implements StatisticsBuilder {
+    @Override public String getName() { return "Self-loop count"; }
+    @Override public Statistics getStatistics() { return new SelfLoopStatistic(); }
+    @Override public Class<? extends Statistics> getStatisticsClass() {
+        return SelfLoopStatistic.class;
     }
 }
- 
-public void unsetup() {
-    if(panel!=null) {
-        myMetric.setDirected(panel.isDirected());
-    }
-    panel = null;
-}
 ```
 
-The final step is the `getValue()`, which returns the result value on the front-end. If your metric doesn't have a single result value, return `null`.
-
-## Implementation help
-
-The `execute()` method gives both `GraphModel` for getting graph structure and AttributeModel to write results in new attribute columns.
-
-### Use Progress
-
-If you know how many steps your algorithm is doing, for instance if your algorithm just reads nodes:
-
-``Progress.start(progressTicket, graph.getNodeCount());``
-
-and `Progress.progress(progressTicket)` within the loop.
-
-### Lock your algorithm
-
-It's preferable to execute your algorithm in a read lock, in order no other thread can modify the graph while execution. Never return `execute()` with a lock open.
+## Implement a cancellable statistic
 
 ```java
-graph.readLock();
-try{
-    //Your algorithm
-    graph.readUnlock();
-} finally {
-    graph.readUnlock();
+public final class SelfLoopStatistic implements Statistics, LongTask {
+    private volatile boolean cancelled;
+    private ProgressTicket progressTicket;
+    private int edgeCount;
+    private int selfLoopCount;
+
+    @Override
+    public void execute(GraphModel graphModel) {
+        Graph graph = graphModel.getGraphVisible();
+        edgeCount = graph.getEdgeCount();
+        selfLoopCount = 0;
+        Progress.start(progressTicket, edgeCount);
+
+        graph.readLock();
+        try {
+            for (Edge edge : graph.getEdges()) {
+                if (cancelled) {
+                    return;
+                }
+                if (edge.isSelfLoop()) {
+                    selfLoopCount++;
+                }
+                Progress.progress(progressTicket);
+            }
+        } finally {
+            graph.readUnlock();
+            Progress.finish(progressTicket);
+        }
+    }
+
+    @Override
+    public String getReport() {
+        return "<html><body><h1>Self-loop count</h1>"
+            + "<p>Visible edges: " + edgeCount + "</p>"
+            + "<p>Self-loops: " + selfLoopCount + "</p>"
+            + "</body></html>";
+    }
+
+    @Override public boolean cancel() { cancelled = true; return true; }
+    @Override public void setProgressTicket(ProgressTicket ticket) {
+        progressTicket = ticket;
+    }
+    public int getSelfLoopCount() { return selfLoopCount; }
 }
 ```
 
-### Write results for each node/edge
+The controller supplies the `GraphModel` and runs `LongTask` statistics in the long-task infrastructure. Use the visible graph if the measure should follow filtering. Say “visible graph” in the report so results are interpretable.
 
-It's easy, you create a new column and set row's value for each node. If you want to write an in-degree column, in `execute()`:
+For an expensive algorithm, snapshot the necessary structure under the read lock, release it, calculate, then write results in a short final phase. See [Graph access and long tasks](./Graph_API_and_Threads.md#snapshot-calculate-write-back).
+
+## Add result columns safely
+
+Use the table from `GraphModel`; the old `AttributeModel` parameter no longer exists in the 0.11.2 `Statistics.execute` signature.
 
 ```java
 Table nodeTable = graphModel.getNodeTable();
-Column col = nodeTable.addColumn("my_column", "My Column", Integer.class);
- 
-for (Node n : graph.getNodes()) {
-    n.setAttribute(col, ...); //Your value here
+Column column = nodeTable.getColumn("org.example.my_score");
+if (column == null) {
+    column = nodeTable.addColumn(
+        "org.example.my_score", "My score", Double.class, null);
+} else if (!Double.class.equals(column.getTypeClass())) {
+    throw new IllegalStateException("My score column has an incompatible type");
+}
+
+for (Node node : graph.getNodes()) {
+    if (cancelled) {
+        return;
+    }
+    node.setAttribute(column, scores.get(node.getId()));
 }
 ```
 
-### Sample
+Namespace a computed column ID. Reuse a compatible existing column so rerunning the statistic updates rather than duplicates it. Decide what cancellation means before writing: either compute fully and commit, or document that partial values may remain.
+
+## Integrate settings and summary UI
+
+Register a `StatisticsUI` whose class exactly matches the builder:
 
 ```java
-public void execute(GraphModel graphModel, AttributeModel attributeModel) {
-    report += "Algorithm started ";
-    Graph graph = graphModel.getGraphVisible();
-    graph.readLock();
+@ServiceProvider(service = StatisticsUI.class)
+public final class SelfLoopUI implements StatisticsUI {
+    private SelfLoopStatistic statistic;
 
-    try {
-        Progress.start(progressTicket, graph.getNodeCount());
-
-        for (Node n : graph.getNodes()) {
-            //do something
-            Progress.progress(progressTicket);
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-   } finally {
-        graph.readUnlock();
+    @Override public JPanel getSettingsPanel() { return null; }
+    @Override public void setup(Statistics value) {
+        statistic = (SelfLoopStatistic) value;
     }
+    @Override public void unsetup() { statistic = null; }
+    @Override public Class<? extends Statistics> getStatisticsClass() {
+        return SelfLoopStatistic.class;
+    }
+    @Override public String getValue() {
+        return statistic == null ? null : Integer.toString(statistic.getSelfLoopCount());
+    }
+    @Override public String getDisplayName() { return "Self-loop count"; }
+    @Override public String getShortDescription() { return "Counts visible self-loop edges."; }
+    @Override public String getCategory() { return StatisticsUI.CATEGORY_NETWORK_OVERVIEW; }
+    @Override public int getPosition() { return 800; }
 }
 ```
+
+If settings are needed, create the panel in `getSettingsPanel()`, load algorithm values in `setup()`, and copy validated values back in `unsetup()`. The algorithm must still validate settings because it can also be called programmatically.
+
+## Report quality checklist
+
+- Define the graph view, directionality, weights, missing-value policy, and parameters used.
+- Escape user-derived strings before placing them in HTML.
+- Handle zero nodes/edges without division by zero.
+- Start, update, and finish progress in all paths.
+- Check cancellation in outer and expensive inner loops.
+- Make repeated runs replace or deliberately version their output columns.
+- Unit-test tiny graphs with known answers, including self-loops, parallel edges, and disconnected components as relevant.
