@@ -34,9 +34,31 @@ Gephi Lite does not support writing GraphML.
 Gephi Lite GEXF and GraphML support are both fueled by the [Graphology library](https://graphology.github.io/standard-library/). Enhancing GEXF or GraphML support would require enhancing Graphology modules.
 :::
 
-## Gephi Lite workspace
+## Graphology JSON
 
-On top of the data exchange formats (GEXF and GraphML), Gephi Lite proposes its own internal workspace format.
+The simplest format that Gephi Lite can read and that is easy to generate by external tools.
+
+```json
+{
+  "nodes": [
+    {"key": "Thomas"},
+    {"key": "Eric"}
+  ],
+  "edges": [
+    {"source": "Thomas", "target": "Eric"}
+  ]
+```
+
+This results in a two node graph (link is TBD) without advanced features like colors that
+Gephi Lite supports. Issue https://github.com/gephi/gephi-documentation/issues/15 tracks what
+features is possible to encode with Graphology JSON.
+
+The Graphology issue https://github.com/graphology/graphology/issues/555 tracks JSON schema
+that could be used to validate the format.
+
+## Gephi Lite Workspace
+
+On top of the data exchange formats, Gephi Lite proposes its own internal workspace format.
 
 This file is a JSON file which represents not only the graph data but also the Gephi Lite application workspace state:
 
