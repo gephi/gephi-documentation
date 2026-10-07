@@ -70,6 +70,8 @@ When a file comes from another version, Gephi Lite shows an error, with an **Ope
 in a degraded mode: the graph data (nodes, edges, their attributes and positions) is imported, but the appearance,
 filters and layout state are lost.
 
+![Error when opening a file from an older Gephi Lite version](./assets/file-open-old-version.png)
+
 When such a file is opened [from a URL](./share-graph-as-url.md), it is opened in degraded mode directly, with a warning
 notification.
 

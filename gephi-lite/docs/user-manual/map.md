@@ -5,6 +5,8 @@ sidebar_position: 6
 
 Since version 1.1, Gephi Lite can place nodes from their geographic coordinates, and display a map behind the graph.
 
+![Airports network placed on a world map in Gephi Lite](./assets/map-example.png)
+
 ## Geographic layout
 
 The **Geographic** layout is in the `Layout` panel. It positions nodes according to their latitude and longitude.
@@ -13,6 +15,8 @@ It needs two **number** node attributes: one for the latitude, one for the longi
 from attributes named like `lat` or `latitude`, and `lng`, `lon`, `long` or `longitude`.
 
 ### Parameters
+
+![Geographic layout parameters in the Layout panel](./assets/map-settings.png)
 
 - **Projection**: how coordinates are projected on the plane:
   - `Web Mercator` (default): the only one that allows displaying a [map background](#map-background)
@@ -50,6 +54,8 @@ The map is rendered using [MapLibre](https://maplibre.org/). Its look is describ
 
 To edit it, open `Appearance > Background`, and click the `Edit` button in the **Map background** section. This opens a
 JSON editor, prefilled with the current style. The style must be a valid JSON object.
+
+![Map style editor](./assets/map-style.png)
 
 Once a custom style is set, a reset button appears next to the `Edit` button, to go back to the default style.
 
