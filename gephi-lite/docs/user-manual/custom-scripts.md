@@ -21,7 +21,7 @@ From the **Filters** menu, choosing **Custom script** opens the script editor, a
  * @param {AbstractGraph<GraphNode, GraphEdge>} graph Graphology instance (https://graphology.github.io/)
  * @return {boolean} TRUE if the item should be kept in the graph, FALSE to filter it
  */
-function filter(id, attributes, graph) {
+function nodeFilter(id, attributes, graph) {
   //
   // Your code goes here
   //
@@ -29,29 +29,47 @@ function filter(id, attributes, graph) {
 }
 ```
 
+When filtering edges, the function is named `edgeFilter`, and `attributes` holds the edge attributes (`GraphEdge`).
+
 ### Examples
 
-- Keep nodes that have a property 'age' superior than `18` :
+- Keep nodes that have a property 'age' greater than `18`:
 
 ```js
-function filter(id, attributes, graph) {
+function nodeFilter(id, attributes, graph) {
   return attributes.age > 18;
 }
 ```
 
-- Keep nodes that have a property 'age' below 18 and with a degree inferior to 10 :
+- Keep nodes that have a property 'age' below `18` and a degree below `10`:
 
 ```js
-function filter(id, attributes, graph) {
+function nodeFilter(id, attributes, graph) {
   return attributes.age < 18 && graph.degree(id) < 10;
 }
 ```
 
-- Keep nodes on which the property 'job' is defined
+- Keep nodes on which the property 'job' is defined:
 
 ```js
-function filter(id, attributes, graph) {
+function nodeFilter(id, attributes, graph) {
   return attributes.job !== undefined;
+}
+```
+
+- Keep edges that have a property 'cooccurrence' greater than `5`:
+
+```js
+function edgeFilter(id, attributes, graph) {
+  return attributes.cooccurrence > 5;
+}
+```
+
+- Keep edges whose target node has a degree greater than `5`:
+
+```js
+function edgeFilter(id, attributes, graph) {
+  return graph.degree(graph.target(id)) > 5;
 }
 ```
 
@@ -73,13 +91,13 @@ function nodeCoordinates(id, attributes, index, graph) {
   //
   // Your code goes here
   //
-  return { x: attributes.x, y: attributes.y };
+  return { x: Math.random() * 1000, y: Math.random() * 1000 };
 }
 ```
 
 ### Examples
 
-- Random layout on a 1000x1000 space
+- Random layout on a 1000x1000 space (the default function):
 
 ```js
 function nodeCoordinates(id, attributes, index, graph) {
@@ -87,7 +105,7 @@ function nodeCoordinates(id, attributes, index, graph) {
 }
 ```
 
-- Circular layout
+- Circular layout:
 
 ```js
 function nodeCoordinates(id, attributes, index, graph) {
@@ -100,19 +118,20 @@ function nodeCoordinates(id, attributes, index, graph) {
 
 ## Scripted node/edge attribute
 
-On the **Data** page, choosing **Create nodes scripted attribute** in the **Data creation** menu opens the script editor, allowing you to implement this function:
+On the **Data** page, choosing **Create nodes scripted attribute** in the **Data creation** menu opens the script
+editor, allowing you to implement this function:
 
 ```js
 /**
- * Function that returns a new attribute value for the specified node/edge.
+ * Function that returns a new attribute value for the specified node.
  *
- * @param {string} id The ID of the node/edge
- * @param {GraphNode} attributes Attributes of the node/edge
- * @param {number} index The index position of the node/edge in the graph
+ * @param {string} id The ID of the node
+ * @param {GraphNode} attributes Attributes of the node
+ * @param {number} index The index position of the node in the graph
  * @param {AbstractGraph<GraphNode, GraphEdge>} graph Graphology instance (https://graphology.github.io/)
- * @returns number|string|boolean|null|undefined" The value of the new node/edge's attribute
+ * @returns number|string|boolean|null|undefined" The value of the new node's attribute
  */
-function addAttribute(id, attributes, index, graph) {
+function addNodeAttribute(id, attributes, index, graph) {
   //
   // Your code goes here
   //
@@ -120,21 +139,23 @@ function addAttribute(id, attributes, index, graph) {
 }
 ```
 
+**Create edges scripted attribute** works the same way, with a function named `addEdgeAttribute`.
+
 ### Examples
 
-- If you have an attribute named 'valid' which take 0 or 1 and you want to cast it into a boolean
+- If you have an attribute named 'valid' which takes `0` or `1`, and you want to cast it into a boolean:
 
 ```js
-function addAttribute(id, attributes, index, graph) {
+function addNodeAttribute(id, attributes, index, graph) {
   return attributes.valid === 1;
 }
 ```
 
-- If you have attributs named 'firstname' and 'lastname' and you want to concatenate them (usefull for graph label)
+- If you have attributes named 'firstname' and 'lastname', and you want to concatenate them (useful for graph labels):
 
 ```js
-function addAttribute(id, attributes, index, graph) {
-  return (attributes.firstname || "") + " " + (attributes.lastname || ");
+function addNodeAttribute(id, attributes, index, graph) {
+  return (attributes.firstname || "") + " " + (attributes.lastname || "");
 }
 ```
 
@@ -144,5 +165,10 @@ The script editor is displayed in a modal.
 
 ![Script editor](./assets/script-editor.png)
 
-The editor is based on [Monaco](https://microsoft.github.io/monaco-editor/), so if you use VS Code, it should feel familiar.
-Types are defined for each function parameter (such as `attributes` or `graph`), enabling autocompletion.
+The editor is based on [Monaco](https://microsoft.github.io/monaco-editor/), so if you use VS Code, it should feel
+familiar. Types are defined for each function parameter (such as `attributes` or `graph`), and the
+[Graphology](https://graphology.github.io/) types are loaded, enabling autocompletion on the `graph` methods.
+
+The documentation comment at the top of the function cannot be edited.
+
+Press `Ctrl+Enter` to save and run your function.

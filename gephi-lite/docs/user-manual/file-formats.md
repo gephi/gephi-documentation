@@ -34,17 +34,43 @@ Gephi Lite does not support writing GraphML.
 Gephi Lite GEXF and GraphML support are both fueled by the [Graphology library](https://graphology.github.io/standard-library/). Enhancing GEXF or GraphML support would require enhancing Graphology modules.
 :::
 
+## Graphology JSON
+
+Gephi Lite can read [Graphology](https://graphology.github.io/) graphs serialized as JSON (with
+[`graph.export()`](https://graphology.github.io/serialization.html)), in a file with the `.json` extension.
+
+This is handy to load graphs built with Graphology scripts, in Node.js or in the browser.
+
+:::warning
+Gephi Lite does not support writing Graphology JSON. Use the Gephi Lite workspace format instead.
+:::
+
 ## Gephi Lite workspace
 
 On top of the data exchange formats (GEXF and GraphML), Gephi Lite proposes its own internal workspace format.
 
 This file is a JSON file which represents not only the graph data but also the Gephi Lite application workspace state:
 
-- Appearance state: how visual attributes were set
+- Appearance state: how visual attributes were set, including the background (such as the
+  [map style](./map.md#map-style))
 - Filter state: filters to apply on the graph
+- Layout state: the last layout run with its parameters, and the layout quality settings
 
 To sum it up, the Gephi Lite workspace file format will save/load the application state together with the graph data.
 
-This format is versioned to allow backward compatibility. The current version of the format is described as the [Gephi Lite workspace JSON schema specification](https://gephi.org/gephi-lite/gephi-lite-format.schema.json).
+The current version of the format is described as the
+[Gephi Lite workspace JSON schema specification](https://gephi.org/gephi-lite/gephi-lite-format.schema.json).
+
+### Files from other Gephi Lite versions
+
+Workspace files are versioned. Gephi Lite fully opens files saved with the same major and minor version only (for
+instance, Gephi Lite 1.1.x opens files from 1.1.x).
+
+When a file comes from another version, Gephi Lite shows an error, with an **Open anyway** button. The file then opens
+in a degraded mode: the graph data (nodes, edges, their attributes and positions) is imported, but the appearance,
+filters and layout state are lost.
+
+When such a file is opened [from a URL](./share-graph-as-url.md), it is opened in degraded mode directly, with a warning
+notification.
 
 <!-- HERE WE COULD ADD A WHICH FORMAT TO CHOSE SECTION WHERE WE SPEAK ABOUT CAPTION -->

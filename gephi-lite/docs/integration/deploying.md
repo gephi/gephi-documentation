@@ -21,9 +21,29 @@ docker run --name gephi-lite -d -p 80:80 ouestware/gephi-lite:latest
 
 Then open [http://localhost](http://localhost) in your browser.
 
+## Using Docker Compose (local development)
+
+The Gephi Lite repository also provides a `docker-compose.yml` file. It runs Gephi Lite directly from the sources, in
+development mode, without installing Node.js on your computer. It is designed for **local development**, not for
+production.
+
+From a clone of the repository (see below), run:
+
+```sh
+docker compose up
+```
+
+Then open [http://localhost:5173/gephi-lite/](http://localhost:5173/gephi-lite/) in your browser. Run
+`docker compose down` to stop it.
+
+:::info
+The sources folder is mounted with the `:z` option, so this also works on SELinux systems (Fedora, etc.).
+:::
+
 ## Build from Source
 
-Gephi Lite is a [React](https://react.dev/) application. To build it, you need [npm](https://nodejs.org/en/download) and [Git](https://git-scm.com/downloads) installed on your computer.
+Gephi Lite is a [React](https://react.dev/) application. To build it, you need [Node.js](https://nodejs.org/en/download)
+(version 24, with npm) and [Git](https://git-scm.com/downloads) installed on your computer.
 
 1. Clone the repository:
 
@@ -45,11 +65,21 @@ export BASE_URL=/ && npm run build
 ```
 
 :::info
-By default, the build process creates a website that must be served under the `/gephi-lite` path (e.g. [http://localhost/gephi-lite/](http://localhost/gephi-lite/)).
+By default, the build process creates a website that must be served under the `/gephi-lite` path (e.g.
+[http://localhost/gephi-lite/](http://localhost/gephi-lite/)).
 
-In the example above, we set the environment variable `BASE_URL` to `/` so the application can be served at the root of the domain.  
-You can adjust it to any path you prefer.
+In the example above, we set the environment variable `BASE_URL` to `/` so the application can be served at the root of
+the domain. You can adjust it to any path you prefer.
 :::
+
+Other environment variables can be set at build time:
+
+- `VITE_GITHUB_PROXY`: URL of the GitHub proxy used for the [GitHub integration](../user-manual/github-auth.md)
+  (default: `/_github`, see the Nginx example below)
+- `VITE_CHECK_LATEST_VERSION`: set it to `true` to show a message on the welcome modal when a newer Gephi Lite version
+  is available (default: `false`)
+- `VITE_VERSION_URL`: URL of the JSON file listing Gephi Lite versions, used by the previous option (default:
+  `https://lite.gephi.org/versions.json`)
 
 4. The static files of the Gephi Lite application are built in the folder:
 
@@ -107,3 +137,13 @@ server {
   }
 }
 ```
+
+## External resources
+
+Gephi Lite runs fully in the browser, but some features load resources from other servers:
+
+- The [map background](../user-manual/map.md) loads its tiles from
+  [MapLibre demo tiles](https://demotiles.maplibre.org/) by default. Users can point the
+  [map style](../user-manual/map.md#map-style) to other tiles, for instance ones hosted on your own servers.
+- The [GitHub integration](../user-manual/github-auth.md) needs the GitHub proxy described above.
+- The new version message calls `VITE_VERSION_URL`, if `VITE_CHECK_LATEST_VERSION` is `true`.
